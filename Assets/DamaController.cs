@@ -9,15 +9,73 @@ public class DamaController : MonoBehaviour
 
     [SerializeField] private GameObject square;
 
+    private DamaAI AI;
+
     private int selectedSquare = -1;
     private int oldSquare = -1;
-    private int jump = -1;
+    public bool tour = true;
+    private bool startAI = false;
 
     void Start()
     {
+        AI = GetComponent<DamaAI>();
+
         CreateBoard();
 
         InvokeRepeating("CheckBoard", .1f, .1f);
+    }
+
+    /// <summary>
+    /// tahtanýn durmunun kontrol edilmesini saðlayan iþlev
+    /// </summary>
+    private void CheckBoard()
+    {
+        if (tour)
+        {
+            if (selectedSquare >= 0 && selectedSquare != oldSquare)
+            {
+                oldSquare = selectedSquare;
+
+                CheckSquare();
+
+                startAI = false;
+            }
+        }
+        else
+        {
+            if (!startAI)
+            {
+                AI.AIStart();
+                startAI = true;
+            }
+        }
+
+    }
+
+    // tur sistemleri
+
+    /// <summary>
+    /// turu deðiþtirir
+    /// </summary>
+    private void ChangeTour()
+    {
+        tour = !tour;
+    }
+
+    // tahtayý kontrol sistemleri
+
+    /// <summary>
+    /// bloklarý kontrol eder
+    /// </summary>
+    private void CheckSquare()
+    {
+        int x = selectedSquare / 8;
+        int z = selectedSquare % 8;
+
+        int pawnType = board[x][z];
+
+        if (pawnType < 3) checkNormalPawn(x, z);
+        else checkDamaPawn(x, z);
     }
 
     /// <summary>
@@ -37,40 +95,12 @@ public class DamaController : MonoBehaviour
     /// pawný dama yapar
     /// </summary>
     /// <param name="square"></param>
-    private void UpdatePawn(int square)
+    private void PawntoDama(int square)
     {
         int x = square / 8;
         int z = square % 8;
 
         board[x][z] += 2;
-    }
-
-
-    /// <summary>
-    /// tahtanýn durmunun kontrol edilmesini saðlayan iþlev
-    /// </summary>
-    private void CheckBoard()
-    {
-        if(selectedSquare >= 0 && selectedSquare != oldSquare)
-        {
-            oldSquare = selectedSquare;
-
-            CheckSquare();
-        }
-    }
-
-    /// <summary>
-    /// bloklarý kontrol eder
-    /// </summary>
-    private void CheckSquare()
-    {
-        int x = selectedSquare / 8;
-        int z = selectedSquare % 8;
-
-        int pawnType = board[x][z];
-
-        if (pawnType < 3) checkNormalPawn(x, z);
-        else checkDamaPawn(x, z);
     }
 
     /// <summary>
@@ -362,9 +392,15 @@ public class DamaController : MonoBehaviour
         boardSCList[selected].pawnNumber = i;
         board[x][z] = i;
 
+        ChangeTour();// boþ hareket ettiðinde turu deðiþtirir
         changeBoard();
     }
 
+    /// <summary>
+    /// yeme iþlemi yapýldýktan sonra hareket edilecek yerin seçilme ile olur
+    /// </summary>
+    /// <param name="selected"></param>
+    /// <param name="eat"></param>
     public void JumpPawn(int selected, int eat)
     {
         int x = selectedSquare / 8;
@@ -387,8 +423,6 @@ public class DamaController : MonoBehaviour
 
         boardSCList[selected].pawnNumber = i;
         board[x][z] = i;
-
-        jump = -1;
 
         changeBoard();
     }
@@ -418,6 +452,10 @@ public class DamaController : MonoBehaviour
             square.ResetSquare();
         }
     }
+
+    ///////////////////////////////////////////////////////////////////
+    /// create 
+    ///////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// tahtayý oluþturur

@@ -65,9 +65,9 @@ public class SquareController : MonoBehaviour
         }
         else
         {
-            if(pawnNumber > 0)
+            if(pawnNumber % 2 == 1)
             {
-                DC.setSelectedSquare(squareNumber);
+                if(DC.tour) DC.setSelectedSquare(squareNumber);
             }
         }
     }
