@@ -1,0 +1,54 @@
+# Unity specific
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Ii]mport/
+[Uu]ws/
+[Rr]eportCache/
+[Rr]eported[Ii]mport[Ii]mporters/
+[Aa]dds/
+[Ll]ightmap[Oo]ptimizedData/
+[Ll]ightmaps/
+[Ll]ightProbes/
+[Aa]ssembly-CSharp-Editor-firstpass-vs.csproj
+[Aa]ssembly-CSharp-vs.csproj
+[Aa]ssembly-CSharp-Editor-vs.csproj
+[Aa]ssembly-CSharp-Editor-firstpass.csproj
+LastChange.sln
+
+# Rider specific
+.idea/
+*.sln.iml
+
+# Visual Studio Code specific
+.vscode/
+
+# User-specific files
+*.suo
+*.user
+*.userprefs
+*.sln.docstates
+*.csproj
+
+# Mono Auto Generated
+mono_crash.*
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# VS Code directories
+.vscode/
+.idea/
+.idea/  # This is JetBrains Rider
+lastchange/.vs/
