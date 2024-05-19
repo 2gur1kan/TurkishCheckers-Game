@@ -14,7 +14,7 @@ public class DamaController : MonoBehaviour
     private int selectedSquare = -1;
     private int oldSquare = -1;
     public bool tour = true;
-    private bool startAI = false;
+    public bool startAI = false;
 
     void Start()
     {
@@ -37,8 +37,6 @@ public class DamaController : MonoBehaviour
                 oldSquare = selectedSquare;
 
                 CheckSquare();
-
-                startAI = false;
             }
         }
         else
@@ -57,9 +55,10 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// turu deðiþtirir
     /// </summary>
-    private void ChangeTour()
+    public void ChangeTour()
     {
-        tour = !tour;
+        if (tour) tour = false;
+        else tour = true;
     }
 
     // tahtayý kontrol sistemleri
