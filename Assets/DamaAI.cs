@@ -67,7 +67,7 @@ public class DamaAI : MonoBehaviour
         foreach (Move move in possibleMoves)
         {
             int[][] newBoard = MakeMove(move);
-            int score = EvaluateBoard(newBoard);
+            int score = EvaluateBoard(newBoard, 0);
             if (score > bestScore)
             {
                 bestScore = score;
@@ -346,8 +346,9 @@ public class DamaAI : MonoBehaviour
     /// </summary>
     /// <param name="board"></param>
     /// <returns></returns>
-    private int EvaluateBoard(int[][] board)
+    private int EvaluateBoard(int[][] board, int type)
     {
+        int reverseType = findOrherType(type);
         int score = 0;
         for (int i = 0; i < 8; i++)
         {
@@ -355,20 +356,51 @@ public class DamaAI : MonoBehaviour
             {
                 if (board[i][j] > 0)
                 {
-                    if (board[i][j] % 2 == 0)
+                    if (board[i][j] % 2 == type)
                     {
-                        if (board[i][j] > 2) score += 20;
-                        else score += 10;
+                        if (board[i][j] > 2) score += 20 + 2 * Mathf.Abs(3 - i) + 2 * Mathf.Abs(3 - j) + FindAlly(board, i, j, reverseType) - FindAlly(board, i, j, type);
+                        else score += 10 + (7 - i) + Mathf.Abs(3 - j) + FindAlly(board, i, j, type) - FindAlly(board, i, j, reverseType);
                     }
                     else
                     {
-                        if (board[i][j] > 2) score -= 20;
-                        else score -= 10;
+                        if (board[i][j] > 2) score -= 20 + 2 * Mathf.Abs(3 - i) + 2 * Mathf.Abs(3 - j) + FindAlly(board, i, j, reverseType) - FindAlly(board, i, j, type);
+                        else score -= 10 + (7 - i) + Mathf.Abs(3 - j) + FindAlly(board, i,j,reverseType) - FindAlly(board, i, j, type);
                     }
                 }
             }
         }
         return score;
+    }
+
+    /// <summary>
+    /// etrafýnda bulunan dostlara göre puan verir
+    /// </summary>
+    /// <param name="board"></param>
+    /// <param name="x"></param>
+    /// <param name="z"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    private int FindAlly(int[][] board, int x, int z, int type)
+    {
+        int result = 0;
+
+        if (x < 7 && board[x + 1][z] % 2 == type) result++;
+        if (x > 0 && board[x - 1][z] % 2 == type) result++;
+        if (z < 7 && board[x][z + 1] % 2 == type) result++;
+        if (z > 0 && board[x][z - 1] % 2 == type) result++;
+
+        return result;
+    }
+
+    /// <summary>
+    /// rakibin numarasýný bulur
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    private int findOrherType(int type)
+    {
+        if (type > 0) return 0;
+        else return 1;
     }
 }
 
