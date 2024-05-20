@@ -10,6 +10,7 @@ public class DamaController : MonoBehaviour
     [SerializeField] private GameObject square;
 
     private DamaAI AI;
+    private UIController UIC;
 
     private int selectedSquare = -1;
     private int oldSquare = -1;
@@ -19,10 +20,16 @@ public class DamaController : MonoBehaviour
     void Start()
     {
         AI = GetComponent<DamaAI>();
+        UIC = GameObject.FindGameObjectWithTag("UIController").GetComponent<UIController>();
 
         CreateBoard();
 
         InvokeRepeating("CheckBoard", .1f, .1f);
+    }
+
+    public void SkipTour()
+    {
+        
     }
 
     /// <summary>
@@ -30,6 +37,8 @@ public class DamaController : MonoBehaviour
     /// </summary>
     private void CheckBoard()
     {
+        UIC.UpdateTourText(tour);
+
         if (tour)
         {
             if (selectedSquare >= 0 && selectedSquare != oldSquare)
