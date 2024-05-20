@@ -30,11 +30,13 @@ public class DamaAI : MonoBehaviour
 
     private void AI()
     {
+        DC.startAI = false;
         CheckBoard();
 
         if (again)
         {
-            StartCoroutine(PlayTheMove(FindBestAgainMove()));
+            Move againMove = FindBestAgainMove();
+            StartCoroutine(PlayTheMove(againMove));
         }
 
         Move bestMove = FindBestMove();
@@ -46,6 +48,8 @@ public class DamaAI : MonoBehaviour
 
     private IEnumerator PlayTheMove(Move move)
     {
+        jumper = move.To;
+
         yield return new WaitForSeconds(.5f);
 
         DC.setSelectedSquare(move.From);
@@ -57,7 +61,6 @@ public class DamaAI : MonoBehaviour
 
         if (move.State == state.move || !again) DC.tour = true;
 
-        jumper = move.To;
         DC.startAI = false;
     }
 
@@ -102,7 +105,6 @@ public class DamaAI : MonoBehaviour
         {
             again = false;//yeme hamlesi yoksa durur
             moves.Add(new Move(jumper, jumper));
-            jumper = -1;
         }
 
         return moves;
@@ -169,14 +171,14 @@ public class DamaAI : MonoBehaviour
     /// <param name="moves"></param>
     private void AddPossibleMoves(int row, int col, List<Move> moves)
     {
-        int pawnType = board[row][col];
+        int pawn = board[row][col];
 
-        if (pawnType > 2)
+        if (pawn > 2)
         {
             // Dama taþýnýn hareketleri
             AddDamaMoves(row, col, moves);
         }
-        else if(pawnType > 0)
+        else if(pawn > 0)
         {
             // Normal taþýn hareketleri
             AddNormalMoves(row, col, moves);
@@ -225,10 +227,8 @@ public class DamaAI : MonoBehaviour
         }
         for (int i = row + 1; i < 8; i++)
         {
-            if (IsValidMoveRow(col, i, reverseType))
+            if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i + 1))
             {
-                if (IsValidMoveRow(col, i + 1)) break;
-
                 for (int j = i + 1; j >= 0; j++)
                 {
                     if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
@@ -433,6 +433,8 @@ public class DamaAI : MonoBehaviour
         }
         return newBoard;
     }
+
+    // AI ýn deðerlendirmesi için tahtanýn puanlandýðý kýsým
 
     /// <summary>
     /// tahtayý puanlar

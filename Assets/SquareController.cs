@@ -59,7 +59,6 @@ public class SquareController : MonoBehaviour
         }
         else if (jump)
         {
-
             DC.JumpPawn(squareNumber, afterEat);
 
             ResetSquare();
