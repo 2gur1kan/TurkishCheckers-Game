@@ -13,6 +13,7 @@ public class UIController : MonoBehaviour
     private void Start()
     {
         DC = GameObject.FindGameObjectWithTag("GameController").GetComponent<DamaController>();
+        ResetButton();
     }
 
     public void ResetButton()
@@ -20,11 +21,16 @@ public class UIController : MonoBehaviour
         SkipButton.SetActive(false);
     }
 
+    public void SetButton()
+    {
+        SkipButton.SetActive(true);
+    }
+
     public void ClickSkipButton()
     {
         DC.SkipTour();
 
-        SkipButton.SetActive(false);
+        ResetButton();
     }
 
     public void UpdateTourText(bool tour)

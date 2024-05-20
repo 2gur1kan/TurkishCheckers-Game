@@ -7,6 +7,9 @@ public class DamaAI : MonoBehaviour
     private DamaController DC;
     private int[][] board;
 
+    public bool again = false;
+    public int jumper = -1;//yiyen eleman
+
     void Start()
     {
         DC = GetComponent<DamaController>();
@@ -28,6 +31,12 @@ public class DamaAI : MonoBehaviour
     private void AI()
     {
         CheckBoard();
+
+        if (again)
+        {
+            StartCoroutine(PlayTheMove(FindBestAgainMove()));
+        }
+
         Move bestMove = FindBestMove();
         if (bestMove != null)
         {
@@ -43,12 +52,65 @@ public class DamaAI : MonoBehaviour
 
         yield return new WaitForSeconds(.5f);
 
-        DC.MovePawn(move.To);
+        if (move.State == state.move) DC.MovePawn(move.To);
+        else if (move.State == state.eat) DC.EatPawn(move.Eat);
 
-        if(move.State == state.move)DC.tour = true;
+        if (move.State == state.move || !again) DC.tour = true;
+
+        jumper = move.To;
         DC.startAI = false;
     }
 
+    private Move FindBestAgainMove()
+    {
+        List<Move> possibleMoves = GetPossibleAgainMove(0);// çiftleri ai kontrole diyor
+        Move bestMove = null;
+        int bestScore = int.MinValue;
+
+        foreach (Move move in possibleMoves)
+        {
+            int[][] newBoard = MakeMove(move);
+            int score = EvaluateBoard(newBoard, 0);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestMove = move;
+            }
+        }
+
+        return bestMove;
+    }
+
+    private List<Move> GetPossibleAgainMove(int type)
+    {
+        int x = jumper / 8;
+        int z = jumper % 8;
+
+        List<Move> moves = new List<Move>();
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (board[i][j] > 0 && board[i][j] % 2 == type)
+                {
+                    AddPossibleMoves(i, j, moves);
+                }
+            }
+        }
+
+        if (moves.Count < 1) 
+        {
+            again = false;//yeme hamlesi yoksa durur
+            moves.Add(new Move(jumper, jumper));
+            jumper = -1;
+        }
+
+        return moves;
+    }
+
+    /// <summary>
+    /// boardýn durumunu alýr
+    /// </summary>
     private void CheckBoard()
     {
         board = DC.board;
@@ -114,7 +176,7 @@ public class DamaAI : MonoBehaviour
             // Dama taþýnýn hareketleri
             AddDamaMoves(row, col, moves);
         }
-        else
+        else if(pawnType > 0)
         {
             // Normal taþýn hareketleri
             AddNormalMoves(row, col, moves);
@@ -132,10 +194,11 @@ public class DamaAI : MonoBehaviour
         // yeme
 
         int pawnType = board[row][col] % 2;
+        int reverseType = findOrherType(pawnType);
 
         for (int i = col - 1; i >= 0; i--)
         {
-            if (IsValidMoveCol(row, i, pawnType)) 
+            if (IsValidMoveCol(row, i, reverseType)) 
             {
                 if (IsValidMoveCol(row, i - 1)) break;
 
@@ -149,7 +212,7 @@ public class DamaAI : MonoBehaviour
         }
         for (int i = col + 1; i < 8; i++)
         {
-            if (IsValidMoveCol(row, i, pawnType))
+            if (IsValidMoveCol(row, i, reverseType))
             {
                 if (IsValidMoveCol(row, i + 1)) break;
 
@@ -162,7 +225,7 @@ public class DamaAI : MonoBehaviour
         }
         for (int i = row + 1; i < 8; i++)
         {
-            if (IsValidMoveRow(col, i, pawnType))
+            if (IsValidMoveRow(col, i, reverseType))
             {
                 if (IsValidMoveRow(col, i + 1)) break;
 
@@ -175,7 +238,7 @@ public class DamaAI : MonoBehaviour
         }
         for (int i = row - 1; i >= 0; i--)
         {
-            if (IsValidMoveRow(col, i, pawnType))
+            if (IsValidMoveRow(col, i, reverseType))
             {
                 if (IsValidMoveRow(col, i - 1)) break;
 
@@ -189,21 +252,24 @@ public class DamaAI : MonoBehaviour
 
         // hareket
 
-        for (int i = col - 1; IsValidMoveCol(row, i); i--)
+        if (again)
         {
-            moves.Add(new Move(row * 8 + col, row * 8 + i));
-        }
-        for(int i = col + 1; IsValidMoveCol(row, i); i++)
-        {
-            moves.Add(new Move(row * 8 + col, row * 8 + i));
-        }
-        for(int i = row + 1; IsValidMoveRow(col, i); i++)
-        {
-            moves.Add(new Move(row * 8 + col, i * 8 + col));
-        }
-        for(int i = row - 1; IsValidMoveRow(col, i); i--)
-        {
-            moves.Add(new Move(row * 8 + col, i * 8 + col));
+            for (int i = col - 1; IsValidMoveCol(row, i); i--)
+            {
+                moves.Add(new Move(row * 8 + col, row * 8 + i));
+            }
+            for (int i = col + 1; IsValidMoveCol(row, i); i++)
+            {
+                moves.Add(new Move(row * 8 + col, row * 8 + i));
+            }
+            for (int i = row + 1; IsValidMoveRow(col, i); i++)
+            {
+                moves.Add(new Move(row * 8 + col, i * 8 + col));
+            }
+            for (int i = row - 1; IsValidMoveRow(col, i); i--)
+            {
+                moves.Add(new Move(row * 8 + col, i * 8 + col));
+            }
         }
     }
 
@@ -218,33 +284,40 @@ public class DamaAI : MonoBehaviour
         // yeme için
 
         int pawnType = board[row][col] % 2;
+        int reverseType = findOrherType(pawnType);
 
-        if (IsValidMoveCol(row, col - 1, pawnType) && IsValidMoveCol(row, col - 2))
+        if (IsValidMoveCol(row, col - 1, reverseType) && IsValidMoveCol(row, col - 2))
         {
             moves.Add(new Move(row * 8 + col, row * 8 + col - 2, row * 8 + col - 1));
+            again = true;
         }
-        if (IsValidMoveCol(row, col + 1, pawnType) && IsValidMoveCol(row, col + 2))
+        else if (IsValidMoveCol(row, col + 1, reverseType) && IsValidMoveCol(row, col + 2))
         {
             moves.Add(new Move(row * 8 + col, row * 8 + col + 2, row * 8 + col + 1));
+            again = true;
         }
-        if (IsValidMoveRow(col, row - 1, pawnType) && IsValidMoveRow(col, row - 2))
+        else if (IsValidMoveRow(col, row - 1, reverseType) && IsValidMoveRow(col, row - 2))
         {
             moves.Add(new Move(row * 8 + col, (row - 2) * 8 + col, (row - 1) * 8 + col));
+            again = true;
         }
 
         //hareket etmek için
 
-        if (IsValidMoveRow(col, row - 1))// önceliðimiz ileri gitmek olduðu için önce ileri gitme þanslarýmýza bakýyoruz
+        if (!again)
         {
-            moves.Add(new Move(row * 8 + col, (row - 1) * 8 + col));
-        }
-        if (IsValidMoveCol(row, col - 1))
-        {
-            moves.Add(new Move(row * 8 + col, row * 8 + col - 1));
-        }
-        if (IsValidMoveCol(row, col + 1))
-        {
-            moves.Add(new Move(row * 8 + col, row * 8 + col + 1));
+            if (IsValidMoveRow(col, row - 1))// önceliðimiz ileri gitmek olduðu için önce ileri gitme þanslarýmýza bakýyoruz
+            {
+                moves.Add(new Move(row * 8 + col, (row - 1) * 8 + col));
+            }
+            if (IsValidMoveCol(row, col - 1))
+            {
+                moves.Add(new Move(row * 8 + col, row * 8 + col - 1));
+            }
+            if (IsValidMoveCol(row, col + 1))
+            {
+                moves.Add(new Move(row * 8 + col, row * 8 + col + 1));
+            }
         }
     }
 
@@ -254,11 +327,11 @@ public class DamaAI : MonoBehaviour
     /// <param name="startRow"></param>
     /// <param name="cal"></param>
     /// <returns></returns>
-    private bool IsValidMoveCol(int startRow, int cal)
+    private bool IsValidMoveCol(int startRow, int col)
     {
-        if ( cal < 0 || cal > 7)
+        if ( col < 0 || col > 7)
             return false;
-        if (board[startRow][cal] != 0) // Hedef konum boþ olmalý
+        if (board[startRow][col] != 0) // Hedef konum boþ olmalý
             return false;
         return true;
     }
@@ -273,29 +346,48 @@ public class DamaAI : MonoBehaviour
     {
         if ( raw < 0 || raw > 7)
             return false;
-        if (board[startCol][raw] != 0) // Hedef konum boþ olmalý
+        if (board[raw][startCol] != 0) // Hedef konum boþ olmalý
             return false;
         return true;
     }
 
-    private bool IsValidMoveCol(int startRow, int cal, int type)
+    /// <summary>
+    /// tipine uygun ise hareket ettirir
+    /// </summary>
+    /// <param name="startRow"></param>
+    /// <param name="cal"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    private bool IsValidMoveCol(int startRow, int col, int type)
     {
-        if (cal < 0 || cal > 7)
+        if (col < 0 || col > 7)
             return false;
-        if (board[startRow][cal] % 2 == type) // Hedef konum boþ olmalý
+        if (board[startRow][col] % 2 != type) // Hedef konum boþ olmalý
             return false;
         return true;
     }
 
+    /// <summary>
+    /// tipine uygun ise hareket ettirir
+    /// </summary>
+    /// <param name="startCol"></param>
+    /// <param name="raw"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     private bool IsValidMoveRow(int startCol, int raw, int type)
     {
         if (raw < 0 || raw > 7)
             return false;
-        if (board[startCol][raw] % 2 == type) // Hedef konum boþ olmalý
+        if (board[raw][startCol] % 2 != type) // Hedef konum boþ olmalý
             return false;
         return true;
     }
 
+    /// <summary>
+    /// boardý istenilen hareketi yaparak yeniden düzenle
+    /// </summary>
+    /// <param name="move"></param>
+    /// <returns></returns>
     private int[][] MakeMove(Move move)
     {
         int[][] newBoard = CloneBoard();
@@ -303,16 +395,17 @@ public class DamaAI : MonoBehaviour
         int startCol = move.From % 8;
         int endRow = move.To / 8;
         int endCol = move.To % 8;
+        
+        if(move.State == state.eat)
+        {
+            int eatRow = move.Eat / 8;
+            int eatCol = move.Eat % 8;
+
+            newBoard[eatRow][eatCol] = 0;
+        }
 
         newBoard[endRow][endCol] = newBoard[startRow][startCol];
         newBoard[startRow][startCol] = 0;
-
-        if (Mathf.Abs(endRow - startRow) == 2)
-        {
-            int midRow = (startRow + endRow) / 2;
-            int midCol = (startCol + endCol) / 2;
-            newBoard[midRow][midCol] = 0;
-        }
 
         if (endRow == 0 || endRow == 7)
         {

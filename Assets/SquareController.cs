@@ -20,6 +20,7 @@ public class SquareController : MonoBehaviour
 
     [SerializeField] private GameObject Pawn1;
     [SerializeField] private GameObject Pawn2;
+    [SerializeField] private GameObject DamaEffect;
 
     [SerializeField] private Color selectColor = Color.green; 
     [SerializeField] private Color moveColor = Color.yellow; 
@@ -155,6 +156,15 @@ public class SquareController : MonoBehaviour
         {
             Pawn1.SetActive(false);
             Pawn2.SetActive(true);
+        }
+
+        if (pawnNumber > 2)
+        {
+            DamaEffect.SetActive(true);
+        }
+        else
+        {
+            DamaEffect.SetActive(false);
         }
     }
 }

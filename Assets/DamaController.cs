@@ -29,7 +29,7 @@ public class DamaController : MonoBehaviour
 
     public void SkipTour()
     {
-        
+        tour = false;
     }
 
     /// <summary>
@@ -353,6 +353,8 @@ public class DamaController : MonoBehaviour
     /// <param name="selected"></param>
     public void EatPawn(int selected)
     {
+        if(tour) UIC.SetButton();
+
         int x = selectedSquare / 8;
         int z = selectedSquare % 8;
         int i = board[x][z];
@@ -411,6 +413,8 @@ public class DamaController : MonoBehaviour
     /// <param name="eat"></param>
     public void JumpPawn(int selected, int eat)
     {
+        if(tour) UIC.SetButton();
+
         int x = selectedSquare / 8;
         int z = selectedSquare % 8;
         int i = board[x][z];
