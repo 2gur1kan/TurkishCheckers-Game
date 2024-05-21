@@ -37,6 +37,7 @@ public class DamaAI : MonoBehaviour
         {
             Move againMove = FindBestAgainMove();
             StartCoroutine(PlayTheMove(againMove));
+            return;
         }
 
         Move bestMove = FindBestMove();
@@ -124,7 +125,11 @@ public class DamaAI : MonoBehaviour
     /// <returns></returns>
     private Move FindBestMove()
     {
-        List<Move> possibleMoves = GetPossibleMoves(0);// çiftleri ai kontrole diyor
+        List<Move> possibleMoves = new List<Move>();
+
+        if (again) possibleMoves = GetPossibleMoves(0, jumper);
+        else possibleMoves = GetPossibleMoves(0);// çiftleri ai kontrole diyor
+
         Move bestMove = null;
         int bestScore = int.MinValue;
 
@@ -160,6 +165,26 @@ public class DamaAI : MonoBehaviour
                 }
             }
         }
+        return moves;
+    }
+
+    /// <summary>
+    /// verilen tipteki taþlarýn bütün hareketlerini bulur
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    private List<Move> GetPossibleMoves(int type, int square)
+    {
+        int x = square / 8;
+        int z = square % 8;
+
+        List<Move> moves = new List<Move>();
+
+        AddPossibleMoves(x + 1, z, moves);
+        AddPossibleMoves(x - 1, z, moves);
+        AddPossibleMoves(x, z + 1, moves);
+        AddPossibleMoves(x, z - 1, moves);
+
         return moves;
     }
 
@@ -252,7 +277,7 @@ public class DamaAI : MonoBehaviour
 
         // hareket
 
-        if (again)
+        if (!again)
         {
             for (int i = col - 1; IsValidMoveCol(row, i); i--)
             {

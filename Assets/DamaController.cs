@@ -17,7 +17,9 @@ public class DamaController : MonoBehaviour
     public bool tour = true;
     public bool startAI = false;
 
-    public bool again = false;
+    // yeme sonrasý yapýlacak iþlemler
+    private bool again = false;
+    private int jumper = -1;
 
     void Start()
     {
