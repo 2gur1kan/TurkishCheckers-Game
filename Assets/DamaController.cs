@@ -370,20 +370,17 @@ public class DamaController : MonoBehaviour
         {
             if (x == 0)
             {
-                int row = eat / 8;
-                row *= 8;
-
-                for (int i = eat + z; i > row - 1 && i < row + 8; i += z)
+                for (int i = eat + z; i > -1 && i < boardSCList.Count; i += z)
                 {
-                    if (CalculatePawnType(i) < 1) boardSCList[i].Jumpable(eat);
+                    if (CalculatePawnType(i)  == 0) boardSCList[i].Jumpable(eat);
                     else break; //þimdilik bir engel gelince duruyor
                 }
             }
             else
             {
-                for (int i = jumppoint; i > -1 && i < boardSCList.Count; i += 8 * x)
+                for (int i = eat + (8 * x); i > -1 && i < boardSCList.Count; i += 8 * x) 
                 {
-                    if (CalculatePawnType(i) < 1) boardSCList[i].Jumpable(eat);
+                    if (CalculatePawnType(i) == 0) boardSCList[i].Jumpable(eat);
                     else break; //þimdilik bir engel gelince duruyor
                 }
             }
@@ -415,12 +412,12 @@ public class DamaController : MonoBehaviour
                     break;
                 }
 
-                boardSCList[i].Moveable();
+                if(!again) boardSCList[i].Moveable();
             }
         }
         else
         {
-            for (int i = squareNum + (x*8); i > -1 && i < boardSCList.Count; i += x * 8)
+            for (int i = squareNum + (x * 8); i > -1 && i < boardSCList.Count; i += x * 8)
             {
                 if (CalculatePawnType(i) > 0)
                 {
@@ -431,7 +428,7 @@ public class DamaController : MonoBehaviour
                     break;
                 }
 
-                boardSCList[i].Moveable();
+                if(!again) boardSCList[i].Moveable();
             }
         }
 
@@ -447,7 +444,7 @@ public class DamaController : MonoBehaviour
             {
                 if (board[x + 1][z] == 0)
                 {
-                    if (!again) SetMoveDama((x * 8) + z, 1, 0);
+                    SetMoveDama((x * 8) + z, 1, 0);
                 }
                 else if (x < 6 && board[x + 1][z] % 2 != pawnType % 2 && board[x + 2][z] == 0)
                 {
@@ -462,7 +459,7 @@ public class DamaController : MonoBehaviour
             {
                 if (board[x - 1][z] == 0)
                 {
-                    if (!again) SetMoveDama((x * 8) + z, -1, 0);
+                    SetMoveDama((x * 8) + z, -1, 0);
                 }
                 else if (x > 1 && board[x - 1][z] % 2 != pawnType % 2 && board[x - 2][z] == 0)
                 {
@@ -477,7 +474,7 @@ public class DamaController : MonoBehaviour
             {
                 if (board[x][z - 1] == 0)
                 {
-                    if (!again) SetMoveDama((x * 8) + z, 0, -1);
+                    SetMoveDama((x * 8) + z, 0, -1);
                 }
                 else if (z > 1 && board[x][z - 1] % 2 != pawnType % 2 && board[x][z - 2] == 0)
                 {
@@ -492,7 +489,7 @@ public class DamaController : MonoBehaviour
             {
                 if (board[x][z + 1] == 0)
                 {
-                    if (!again) SetMoveDama((x * 8) + z, 0, 1);
+                    SetMoveDama((x * 8) + z, 0, 1);
                 }
                 else if (z < 6 && board[x][z + 1] % 2 != pawnType % 2 && board[x][z + 2] == 0)
                 {
@@ -756,7 +753,7 @@ public class DamaController : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {
-                board[i][j] = 3;
+                board[i][j] = 1;
             }
         }
 
