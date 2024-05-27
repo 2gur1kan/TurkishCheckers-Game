@@ -478,13 +478,13 @@ public class DamaAI : MonoBehaviour
                 {
                     if (board[i][j] % 2 == type)
                     {
-                        if (board[i][j] > 2) score += 20 + 2 * Mathf.Abs(3 - i) + 2 * Mathf.Abs(3 - j) + FindAlly(board, i, j, reverseType) - FindAlly(board, i, j, type);
-                        else score += 10 + (7 - i) + Mathf.Abs(3 - j) + FindAlly(board, i, j, type) - FindAlly(board, i, j, reverseType);
+                        if (board[i][j] > 2) score += 20 + 2 * EdgeProximityScore(i) + 2 * EdgeProximityScore(j) - FindAlly(board, i, j, reverseType) + FindAlly(board, i, j, type);
+                        else score += 10 + (7 - i) + EdgeProximityScore(j) + FindAlly(board, i, j, type) - FindAlly(board, i, j, reverseType);
                     }
                     else
                     {
-                        if (board[i][j] > 2) score -= 20 + 2 * Mathf.Abs(3 - i) + 2 * Mathf.Abs(3 - j) + FindAlly(board, i, j, reverseType) - FindAlly(board, i, j, type);
-                        else score -= 10 + (7 - i) + Mathf.Abs(3 - j) + FindAlly(board, i,j,reverseType) - FindAlly(board, i, j, type);
+                        if (board[i][j] > 2) score -= 20 + 2 * EdgeProximityScore(i) + 2 * EdgeProximityScore(j) + FindAlly(board, i, j, reverseType) - FindAlly(board, i, j, type);
+                        else score -= 10 + i + EdgeProximityScore(j) + FindAlly(board, i,j,reverseType) - FindAlly(board, i, j, type);
                     }
                 }
             }
@@ -493,7 +493,19 @@ public class DamaAI : MonoBehaviour
     }
 
     /// <summary>
+    /// kenara yakýn olmasýna göre puan vermesini saðlar
+    /// </summary>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    private int EdgeProximityScore(int y)
+    {
+        return 2 * (int)Mathf.Abs(3.5f - (float)y);
+    }
+
+    /// <summary>
     /// etrafýnda bulunan dostlara göre puan verir
+    /// 
+    /// not tipini ters vermek yakýnýndaki düþmanlarý buldurur
     /// </summary>
     /// <param name="board"></param>
     /// <param name="x"></param>
