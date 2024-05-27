@@ -67,24 +67,20 @@ public class DamaController : MonoBehaviour
 
     private void CompulsiveEating()
     {
-        List<Move> Moves = eatFinder();
+        int Move = eatFinder();
+        Debug.Log("eat num : " + Move);
 
-        if(Moves.Count > 0)
+        if(Move >= 0)
         {
-            if (Moves.Count > 1)//gidilebilecek yerler çok olduðunda
-            {
-                StartCoroutine(PlayTheMove(Moves[0]));
-
-                return;
-            }
-
-            StartCoroutine(PlayTheMove(Moves[0]));
+            selectedSquare = Move;
+            SetAfterEatBoard();
+            again = true;
         }
     }
 
-    private List<Move> eatFinder()
+    private int eatFinder()
     {
-        List<Move> moves = new List<Move>();
+        int move = -1;
         int type = CheckTourPawnType();
 
         for (int i = 0; i < 8; i++)
@@ -93,33 +89,35 @@ public class DamaController : MonoBehaviour
             {
                 if (board[i][j] > 0 && board[i][j] % 2 == type)
                 {
-                    AddPossibleMoves(i, j, moves);
+                    move = AddPossibleMoves(i, j);
 
-                    if (moves.Count < 1) return moves;
+                    if (move > -1) return move;
                 }
             }
         }
 
-        return moves;
+        return -1;
     }
 
-    private void AddPossibleMoves(int row, int col, List<Move> moves)
+    private int AddPossibleMoves(int row, int col)
     {
         int pawn = board[row][col];
 
         if (pawn > 2)
         {
             // Dama taþýnýn hareketleri
-            AddDamaMoves(row, col, moves);
+            return AddDamaMoves(row, col);
         }
         else if (pawn > 0)
         {
             // Normal taþýn hareketleri
-            AddNormalMoves(row, col, moves);
+            return AddNormalMoves(row, col);
         }
+
+        return -1;
     }
 
-    private void AddDamaMoves(int row, int col, List<Move> moves)
+    private int AddDamaMoves(int row, int col)
     {
         int pawnType = board[row][col] % 2;
         int reverseType = findOrherType(pawnType);
@@ -132,9 +130,9 @@ public class DamaController : MonoBehaviour
 
                 for (int j = i - 1; j >= 0; j--)
                 {
-                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    if (IsValidMoveCol(row, j)) return row * 8 + col;
                 }
-                return;
+                return -1;
             }
 
         }
@@ -146,9 +144,9 @@ public class DamaController : MonoBehaviour
 
                 for (int j = i + 1; j < 8; j++)
                 {
-                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    if (IsValidMoveCol(row, j)) return row * 8 + col;
                 }
-                return;
+                return -1;
             }
         }
         for (int i = row + 1; i < 8; i++)
@@ -159,9 +157,9 @@ public class DamaController : MonoBehaviour
 
                 for (int j = i + 1; j >= 0; j++)
                 {
-                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    if (IsValidMoveRow(col, j)) return row * 8 + col;
                 }
-                return;
+                return -1;
             }
         }
         for (int i = row - 1; i >= 0; i--)
@@ -172,35 +170,33 @@ public class DamaController : MonoBehaviour
 
                 for (int j = i - 1; j >= 0; j--)
                 {
-                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    if (IsValidMoveRow(col, j)) return row * 8 + col;
                 }
-                return;
+                return -1;
             }
         }
+
+        return -1;
     }
 
-    private void AddNormalMoves(int row, int col, List<Move> moves)
+    private int AddNormalMoves(int row, int col)
     {
-        // yeme için
+        int reverseType = (board[row][col] + 1) % 2;
 
-        int pawnType = board[row][col] % 2;
-        int reverseType = findOrherType(pawnType);
+        if (IsValidMoveCol(row, col - 1, reverseType) && IsValidMoveCol(row, col - 2) && !IsValidMoveCol(row, col - 1))
+        {
+            return row * 8 + col;
+        }
+        else if (IsValidMoveCol(row, col + 1, reverseType) && IsValidMoveCol(row, col + 2) && !IsValidMoveCol(row, col + 1))
+        {
+            return row * 8 + col;
+        }
+        else if (IsValidMoveRow(col, row + 1, reverseType) && IsValidMoveRow(col, row + 2) && !IsValidMoveRow(col, row + 1))
+        {
+            return row * 8 + col;
+        }
 
-        if (IsValidMoveCol(row, col - 1, reverseType) && IsValidMoveCol(row, col - 2))
-        {
-            moves.Add(new Move(row * 8 + col, row * 8 + col - 2, row * 8 + col - 1));
-            return;
-        }
-        else if (IsValidMoveCol(row, col + 1, reverseType) && IsValidMoveCol(row, col + 2))
-        {
-            moves.Add(new Move(row * 8 + col, row * 8 + col + 2, row * 8 + col + 1));
-            return;
-        }
-        else if (IsValidMoveRow(col, row - 1, reverseType) && IsValidMoveRow(col, row - 2))
-        {
-            moves.Add(new Move(row * 8 + col, (row - 2) * 8 + col, (row - 1) * 8 + col));
-            return;
-        }
+        return -1;
     }
 
     /// <summary>
@@ -260,7 +256,7 @@ public class DamaController : MonoBehaviour
     {
         if (raw < 0 || raw > 7)
             return false;
-        if (board[raw][startCol] % 2 != type) // Hedef konum boþ olmalý
+        if (board[raw][startCol] % 2 != type)
             return false;
         return true;
     }

@@ -499,7 +499,7 @@ public class DamaAI : MonoBehaviour
     /// <returns></returns>
     private int EdgeProximityScore(int y)
     {
-        return 2 * (int)Mathf.Abs(3.5f - (float)y);
+        return (int)Mathf.Abs(3.5f - (float)y);
     }
 
     /// <summary>
