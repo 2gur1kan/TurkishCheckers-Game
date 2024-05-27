@@ -80,7 +80,7 @@ public class DamaController : MonoBehaviour
 
     private int eatFinder()
     {
-        int move = -1;
+        int move;
         int type = CheckTourPawnType();
 
         for (int i = 0; i < 8; i++)
@@ -117,68 +117,63 @@ public class DamaController : MonoBehaviour
         return -1;
     }
 
+    /// <summary>
+    /// dama piyonun yiyebileceði bir yer varmý ona bakar
+    /// </summary>
+    /// <param name="row"></param>
+    /// <param name="col"></param>
+    /// <returns></returns>
     private int AddDamaMoves(int row, int col)
     {
-        int pawnType = board[row][col] % 2;
-        int reverseType = findOrherType(pawnType);
+        int type = board[row][col] % 2;
+        int reverseType = (type + 1) % 2;
 
         for (int i = col - 1; i >= 0; i--)
         {
-            if (IsValidMoveCol(row, i, reverseType))
+            if (IsValidMoveCol(row, i, type) && !IsValidMoveCol(row, i)) break;
+
+            if (IsValidMoveCol(row, i, reverseType) && IsValidMoveCol(row, i - 1) && !IsValidMoveCol(row, i))
             {
-                if (IsValidMoveCol(row, i - 1)) break;
-
-                for (int j = i - 1; j >= 0; j--)
-                {
-                    if (IsValidMoveCol(row, j)) return row * 8 + col;
-                }
-                return -1;
+                return row * 8 + col;
             }
-
         }
         for (int i = col + 1; i < 8; i++)
         {
-            if (IsValidMoveCol(row, i, reverseType))
-            {
-                if (IsValidMoveCol(row, i + 1)) break;
+            if (IsValidMoveCol(row, i, type) && !IsValidMoveCol(row, i)) break;
 
-                for (int j = i + 1; j < 8; j++)
-                {
-                    if (IsValidMoveCol(row, j)) return row * 8 + col;
-                }
-                return -1;
+            if (IsValidMoveCol(row, i, reverseType) && IsValidMoveCol(row, i + 1) && !IsValidMoveCol(row, i))
+            {
+                return row * 8 + col;
             }
         }
         for (int i = row + 1; i < 8; i++)
         {
-            if (IsValidMoveRow(col, i, reverseType))
-            {
-                if (IsValidMoveRow(col, i + 1)) break;
+            if (IsValidMoveRow(col, i, type) && !IsValidMoveCol(row, i)) break;
 
-                for (int j = i + 1; j >= 0; j++)
-                {
-                    if (IsValidMoveRow(col, j)) return row * 8 + col;
-                }
-                return -1;
+            if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i + 1) && !IsValidMoveRow(col, i))
+            {
+                return row * 8 + col;
             }
         }
         for (int i = row - 1; i >= 0; i--)
         {
-            if (IsValidMoveRow(col, i, reverseType))
-            {
-                if (IsValidMoveRow(col, i - 1)) break;
+            if (IsValidMoveRow(col, i, type) && !IsValidMoveCol(row, i)) break;
 
-                for (int j = i - 1; j >= 0; j--)
-                {
-                    if (IsValidMoveRow(col, j)) return row * 8 + col;
-                }
-                return -1;
+            if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i - 1) && !IsValidMoveRow(col, i))
+            {
+                return row * 8 + col;
             }
         }
 
         return -1;
     }
 
+    /// <summary>
+    /// normal piyonun yeme iþlevi için etrafýna bakar
+    /// </summary>
+    /// <param name="row"></param>
+    /// <param name="col"></param>
+    /// <returns></returns>
     private int AddNormalMoves(int row, int col)
     {
         int reverseType = (board[row][col] + 1) % 2;
@@ -761,7 +756,7 @@ public class DamaController : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {
-                board[i][j] = 1;
+                board[i][j] = 3;
             }
         }
 
