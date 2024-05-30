@@ -442,7 +442,7 @@ public class DamaController : MonoBehaviour
         {
             if (pawnType != board[x + 1][z])
             {
-                if (board[x + 1][z] == 0)
+                if (board[x + 1][z] == 0 && !again)
                 {
                     SetMoveDama((x * 8) + z, 1, 0);
                 }
@@ -457,7 +457,7 @@ public class DamaController : MonoBehaviour
         {
             if (pawnType != board[x - 1][z])
             {
-                if (board[x - 1][z] == 0)
+                if (board[x - 1][z] == 0 && !again)
                 {
                     SetMoveDama((x * 8) + z, -1, 0);
                 }
@@ -472,7 +472,7 @@ public class DamaController : MonoBehaviour
         {
             if (pawnType != board[x][z - 1])
             {
-                if (board[x][z - 1] == 0)
+                if (board[x][z - 1] == 0 && !again)
                 {
                     SetMoveDama((x * 8) + z, 0, -1);
                 }
@@ -487,7 +487,7 @@ public class DamaController : MonoBehaviour
         {
             if (board[x][z] != board[x][z + 1])
             {
-                if (board[x][z + 1] == 0)
+                if (board[x][z + 1] == 0 && !again)
                 {
                     SetMoveDama((x * 8) + z, 0, 1);
                 }

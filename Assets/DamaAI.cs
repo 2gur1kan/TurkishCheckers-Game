@@ -125,7 +125,7 @@ public class DamaAI : MonoBehaviour
     /// <returns></returns>
     private Move FindBestMove()
     {
-        List<Move> possibleMoves = new List<Move>();
+        List<Move> possibleMoves;
 
         if (again) possibleMoves = GetPossibleMoves(0, jumper);
         else possibleMoves = GetPossibleMoves(0);// çiftleri ai kontrole diyor
@@ -180,10 +180,7 @@ public class DamaAI : MonoBehaviour
 
         List<Move> moves = new List<Move>();
 
-        AddPossibleMoves(x + 1, z, moves);
-        AddPossibleMoves(x - 1, z, moves);
-        AddPossibleMoves(x, z + 1, moves);
-        AddPossibleMoves(x, z - 1, moves);
+        AddPossibleMoves(x, z, moves);
 
         return moves;
     }
@@ -223,29 +220,26 @@ public class DamaAI : MonoBehaviour
         int pawnType = board[row][col] % 2;
         int reverseType = findOrherType(pawnType);
 
-        for (int i = col - 1; i >= 0; i--)
+        for (int i = col - 1; i > -1; i--)
         {
-            if (IsValidMoveCol(row, i, reverseType)) 
+            if (IsValidMoveCol(row, i, reverseType) && IsValidMoveCol(row, i - 1)) 
             {
-                if (IsValidMoveCol(row, i - 1)) break;
-
-                for(int j = i - 1; j >= 0; j--)
+                for(int j = i - 1; j > -1; j--)
                 {
-                    if(IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    if (!IsValidMoveCol(row, j)) break;
+                    moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
                 }
                 break;
             }
-            
         }
         for (int i = col + 1; i < 8; i++)
         {
-            if (IsValidMoveCol(row, i, reverseType))
+            if (IsValidMoveCol(row, i, reverseType) && IsValidMoveCol(row, i + 1))
             {
-                if (IsValidMoveCol(row, i + 1)) break;
-
                 for (int j = i + 1; j < 8; j++)
                 {
-                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    if (!IsValidMoveCol(row, j)) break;
+                    moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
                 }
                 break;
             }
@@ -254,22 +248,22 @@ public class DamaAI : MonoBehaviour
         {
             if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i + 1))
             {
-                for (int j = i + 1; j >= 0; j++)
+                for (int j = i + 1; j < 8; j++)
                 {
-                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    if (!IsValidMoveRow(col, j)) break;
+                    moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
                 }
                 break;
             }
         }
-        for (int i = row - 1; i >= 0; i--)
+        for (int i = row - 1; i > -1; i--)
         {
-            if (IsValidMoveRow(col, i, reverseType))
+            if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i - 1))
             {
-                if (IsValidMoveRow(col, i - 1)) break;
-
-                for (int j = i - 1; j >= 0; j--)
+                for (int j = i - 1; j > -1; j--)
                 {
-                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    if (!IsValidMoveRow(col, j)) break;
+                    moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
                 }
                 break;
             }
@@ -531,8 +525,7 @@ public class DamaAI : MonoBehaviour
     /// <returns></returns>
     private int findOrherType(int type)
     {
-        if (type > 0) return 0;
-        else return 1;
+        return (type + 1) % 2;
     }
 }
 
