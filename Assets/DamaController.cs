@@ -230,9 +230,9 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// boþ nokta aramak için satýrý tarar
     /// </summary>
-    private bool IsValidMoveRow(int startCol, int raw)
+    private bool IsValidMoveRow(int startCol, int row)
     {
-        return (raw < 0 || raw > 7 || board[raw][startCol] != 0) ? false : true;
+        return (row < 0 || row > 7 || board[row][startCol] != 0) ? false : true;
     }
 
     /// <summary>
@@ -246,9 +246,9 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// tipine uygun mu diye satýrý arar
     /// </summary>
-    private bool IsValidMoveRow(int startCol, int raw, int type)
+    private bool IsValidMoveRow(int startCol, int row, int type)
     {
-        return (raw < 0 || raw > 7 || board[raw][startCol] % 2 != type) ? false : true;
+        return (row < 0 || row > 7 || board[row][startCol] % 2 != type) ? false : true;
     }
 
     /// <summary>
@@ -310,10 +310,24 @@ public class DamaController : MonoBehaviour
         if (isPawn) boardSCList[jumppoint].Jumpable(eat);
         else
         {
-            for (; jumppoint > -1 && jumppoint < boardSCList.Count; jumppoint += (8 * x) + z)
+            if(x == 0)
             {
-                if (CalculatePawnType(jumppoint) == 0) boardSCList[jumppoint].Jumpable(eat);
-                else break; //þimdilik bir engel gelince duruyor
+                int lower = (eat / 8) * 8 - 1; 
+                int upper = ((eat / 8) + 1) * 8;
+
+                for (; jumppoint > lower && jumppoint < upper; jumppoint += z)
+                {
+                    if (IsValidMoveCol(jumppoint / 8, jumppoint % 8)) boardSCList[jumppoint].Jumpable(eat);
+                    else break; //þimdilik bir engel gelince duruyor
+                }
+            }
+            else
+            {
+                for (; jumppoint > -1 && jumppoint < boardSCList.Count; jumppoint += (8 * x))
+                {
+                    if (IsValidMoveRow(jumppoint % 8, jumppoint / 8)) boardSCList[jumppoint].Jumpable(eat);
+                    else break; //þimdilik bir engel gelince duruyor
+                }
             }
         } 
     }
@@ -657,7 +671,7 @@ public class DamaController : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {
-                board[i][j] = 3;
+                board[i][j] = 1;
             }
         }
 
