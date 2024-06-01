@@ -31,6 +31,9 @@ public class DamaController : MonoBehaviour
         InvokeRepeating("CheckBoard", .1f, .1f);
     }
 
+    /// <summary>
+    /// skip butonuna basýnca yapýlmasý gereken deðiþiklikleri ayarlar
+    /// </summary>
     public void SkipTour()
     {
         again = false;
@@ -67,20 +70,34 @@ public class DamaController : MonoBehaviour
 
     private void CompulsiveEating()
     {
-        int Move = eatFinder();
+        Move Move = eatFinder();
         Debug.Log("eat num : " + Move);
 
-        if(Move >= 0)
+        if(Move != null)
         {
-            selectedSquare = Move;
-            SetAfterEatBoard();
+            selectedSquare = Move.From;
             again = true;
+            SetAfterEatBoard();
+            SetForEat(Move);
         }
     }
 
-    private int eatFinder()
+    private void SetForEat(Move move)
     {
-        int move;
+        int direction =  move.To - move.From;
+
+        if(Mathf.Abs(direction) > 7)
+        {
+            direction /= 8;
+
+            SetAfterEat(move.Eat, direction, 0, false);
+        }
+        else SetAfterEat(move.Eat, 0, direction, false);
+    }
+
+    private Move eatFinder()
+    {
+        Move move;
         int type = CheckTourPawnType();
 
         for (int i = 0; i < 8; i++)
@@ -91,15 +108,15 @@ public class DamaController : MonoBehaviour
                 {
                     move = AddPossibleMoves(i, j);
 
-                    if (move > -1) return move;
+                    if (move  != null) return move;
                 }
             }
         }
 
-        return -1;
+        return null;
     }
 
-    private int AddPossibleMoves(int row, int col)
+    private Move AddPossibleMoves(int row, int col)
     {
         int pawn = board[row][col];
 
@@ -114,92 +131,87 @@ public class DamaController : MonoBehaviour
             return AddNormalMoves(row, col);
         }
 
-        return -1;
+        return null;
     }
 
     /// <summary>
     /// dama piyonun yiyebileceði bir yer varmý ona bakar
     /// </summary>
-    /// <param name="row"></param>
-    /// <param name="col"></param>
-    /// <returns></returns>
-    private int AddDamaMoves(int row, int col)
+    private Move AddDamaMoves(int row, int col)
     {
         int type = board[row][col] % 2;
         int reverseType = (type + 1) % 2;
 
         for (int i = col - 1; i >= 0; i--)
         {
-            if (IsValidMoveCol(row, i, type) && !IsValidMoveCol(row, i)) break;
+            if (IsValidMoveCol(row, i, type)) break;
 
-            if (IsValidMoveCol(row, i, reverseType) && IsValidMoveCol(row, i - 1) && !IsValidMoveCol(row, i))
+            if (IsValidMoveCol(row, i, reverseType))
             {
-                return row * 8 + col;
+                if(IsValidMoveCol(row, i - 1) && !IsValidMoveCol(row, i))  return new Move(row * 8 + col, row * 8 + col - 1, row * 8 + i);
+                else break;
             }
         }
         for (int i = col + 1; i < 8; i++)
         {
-            if (IsValidMoveCol(row, i, type) && !IsValidMoveCol(row, i)) break;
+            if (IsValidMoveCol(row, i, type)) break;
 
-            if (IsValidMoveCol(row, i, reverseType) && IsValidMoveCol(row, i + 1) && !IsValidMoveCol(row, i))
+            if (IsValidMoveCol(row, i, reverseType))
             {
-                return row * 8 + col;
+                if(IsValidMoveCol(row, i + 1) && !IsValidMoveCol(row, i)) return new Move(row * 8 + col, row * 8 + col + 1, row * 8 + i);
+                else break;
             }
         }
         for (int i = row + 1; i < 8; i++)
         {
-            if (IsValidMoveRow(col, i, type) && !IsValidMoveCol(row, i)) break;
+            if (IsValidMoveRow(col, i, type)) break;
 
-            if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i + 1) && !IsValidMoveRow(col, i))
+            if (IsValidMoveRow(col, i, reverseType))
             {
-                return row * 8 + col;
+                if (IsValidMoveRow(col, i + 1) && !IsValidMoveRow(col, i)) return new Move(row * 8 + col, (row + 1) * 8 + col, i * 8 + col);
+                else break;
             }
         }
         for (int i = row - 1; i >= 0; i--)
         {
-            if (IsValidMoveRow(col, i, type) && !IsValidMoveCol(row, i)) break;
+            if (IsValidMoveRow(col, i, type)) break;
 
-            if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i - 1) && !IsValidMoveRow(col, i))
+            if (IsValidMoveRow(col, i, reverseType))
             {
-                return row * 8 + col;
+                if (IsValidMoveRow(col, i - 1) && !IsValidMoveRow(col, i)) return new Move(row * 8 + col, (row - 1) * 8 + col, i * 8 + col);
+                else break;
             }
         }
 
-        return -1;
+        return null;
     }
 
     /// <summary>
     /// normal piyonun yeme iþlevi için etrafýna bakar
     /// </summary>
-    /// <param name="row"></param>
-    /// <param name="col"></param>
-    /// <returns></returns>
-    private int AddNormalMoves(int row, int col)
+    private Move AddNormalMoves(int row, int col)
     {
         int reverseType = (board[row][col] + 1) % 2;
 
         if (IsValidMoveCol(row, col - 1, reverseType) && IsValidMoveCol(row, col - 2) && !IsValidMoveCol(row, col - 1))
         {
-            return row * 8 + col;
+            return new Move(row * 8 + col, row * 8 + col - 2, row * 8 + col -1);
         }
         else if (IsValidMoveCol(row, col + 1, reverseType) && IsValidMoveCol(row, col + 2) && !IsValidMoveCol(row, col + 1))
         {
-            return row * 8 + col;
+            return new Move(row * 8 + col, row * 8 + col + 2, row * 8 + col + 1);
         }
         else if (IsValidMoveRow(col, row + 1, reverseType) && IsValidMoveRow(col, row + 2) && !IsValidMoveRow(col, row + 1))
         {
-            return row * 8 + col;
+            return new Move(row * 8 + col, (row + 2) * 8 + col, (row + 1) * 8 + col);
         }
 
-        return -1;
+        return null;
     }
 
     /// <summary>
     /// boþ nokta bulmak için stunu arar
     /// </summary>
-    /// <param name="startRow"></param>
-    /// <param name="cal"></param>
-    /// <returns></returns>
     private bool IsValidMoveCol(int startRow, int col)
     {
         if (col < 0 || col > 7)
@@ -212,9 +224,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// boþ nokta aramak için satýrý tarar
     /// </summary>
-    /// <param name="startCol"></param>
-    /// <param name="raw"></param>
-    /// <returns></returns>
     private bool IsValidMoveRow(int startCol, int raw)
     {
         if (raw < 0 || raw > 7)
@@ -227,10 +236,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// tipine uygun ise hareket ettirir
     /// </summary>
-    /// <param name="startRow"></param>
-    /// <param name="cal"></param>
-    /// <param name="type"></param>
-    /// <returns></returns>
     private bool IsValidMoveCol(int startRow, int col, int type)
     {
         if (col < 0 || col > 7)
@@ -243,10 +248,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// tipine uygun ise hareket ettirir
     /// </summary>
-    /// <param name="startCol"></param>
-    /// <param name="raw"></param>
-    /// <param name="type"></param>
-    /// <returns></returns>
     private bool IsValidMoveRow(int startCol, int raw, int type)
     {
         if (raw < 0 || raw > 7)
@@ -259,29 +260,22 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// rakibin numarasýný bulur
     /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
     private int findOrherType(int type)
     {
-        if (type > 0) return 0;
-        else return 1;
+        return (type > 0) ? 0 : 1;
     }
 
     /// <summary>
     /// sýrasý gelen pawný kontrol eder
     /// </summary>
-    /// <returns></returns>
     private int CheckTourPawnType()
     {
-        if (tour) return 1;
-        return 0;
+        return tour ? 1 : 0;
     }
 
     /// <summary>
     /// yeme hareketini zoraki oynatýr
     /// </summary>
-    /// <param name="move"></param>
-    /// <returns></returns>
     private IEnumerator PlayTheMove(Move move)
     {
         yield return new WaitForSeconds(.5f);
@@ -308,8 +302,7 @@ public class DamaController : MonoBehaviour
     /// </summary>
     public void ChangeTour()
     {
-        if (tour) tour = false;
-        else tour = true;
+        tour = (tour) ? false : true;
 
         again = false;
         AI.again = false;
@@ -335,8 +328,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// pawn ýn hangi pawn olduðunu bulur
     /// </summary>
-    /// <param name="square"></param>
-    /// <returns></returns>
     private int CalculatePawnType(int square)
     {
         int x = square / 8;
@@ -348,7 +339,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// pawný dama yapar
     /// </summary>
-    /// <param name="square"></param>
     private void PawntoDama(int square)
     {
         int x = square / 8;
@@ -360,7 +350,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// yeme iþlemi gerçekleþtikten sonra düþebileceði noktalarý ayarlar
     /// </summary>
-    /// <param name="jump"></param>
     private void SetAfterEat(int eat, int x, int z, bool isPawn)
     {
         int jumppoint = eat + ((8 * x) + z);
@@ -390,9 +379,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// dama olduðu zaman ileriye doðru hareket etmesini saðlayacak kareleri kontrol eder
     /// </summary>
-    /// <param name="squareNum"></param>
-    /// <param name="x"></param>
-    /// <param name="z"></param>
     private void SetMoveDama(int squareNum, int x, int z)
     {
 
@@ -446,10 +432,6 @@ public class DamaController : MonoBehaviour
                 {
                     SetMoveDama((x * 8) + z, 1, 0);
                 }
-                else if (x < 6 && board[x + 1][z] % 2 != pawnType % 2 && board[x + 2][z] == 0)
-                {
-                    SetAfterEat(boardSCList[((x + 1) * 8) + z].Eatable(), 1, 0, false);
-                }
             }
         }
 
@@ -460,10 +442,6 @@ public class DamaController : MonoBehaviour
                 if (board[x - 1][z] == 0 && !again)
                 {
                     SetMoveDama((x * 8) + z, -1, 0);
-                }
-                else if (x > 1 && board[x - 1][z] % 2 != pawnType % 2 && board[x - 2][z] == 0)
-                {
-                    SetAfterEat(boardSCList[((x - 1) * 8) + z].Eatable(), -1, 0, false);
                 }
             }
         }
@@ -476,10 +454,6 @@ public class DamaController : MonoBehaviour
                 {
                     SetMoveDama((x * 8) + z, 0, -1);
                 }
-                else if (z > 1 && board[x][z - 1] % 2 != pawnType % 2 && board[x][z - 2] == 0)
-                {
-                    SetAfterEat(boardSCList[(x * 8) + (z - 1)].Eatable(), 0, -1, false);
-                }
             }
         }
 
@@ -491,10 +465,6 @@ public class DamaController : MonoBehaviour
                 {
                     SetMoveDama((x * 8) + z, 0, 1);
                 }
-                else if (z < 6 && board[x][z + 1] % 2 != pawnType % 2 && board[x][z + 2] == 0)
-                {
-                    SetAfterEat(boardSCList[(x * 8) + (z + 1)].Eatable(), 0, 1, false);
-                }
             }
         }
 
@@ -503,8 +473,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// pawnlarýn hareket edeceði yerleri sahnede ayarlar
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="z"></param>
     private void checkNormalPawn(int x, int z)
     {
         int pawnType = board[x][z];
@@ -583,7 +551,6 @@ public class DamaController : MonoBehaviour
     /// seçildikten sonra iþlemleri gerçekleþtirir ve tahtayý düzenler
     /// (yeme modu true, move modu false)
     /// </summary>
-    /// <param name="selected"></param>
     private void changeBoard()
     {
         if (!again) selectedSquare = -1;
@@ -605,7 +572,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// seçilen yerdeki piyonu yer ve arkasýna geçer
     /// </summary>
-    /// <param name="selected"></param>
     public void EatPawn(int selected)
     {
         if(tour) UIC.SetButton();
@@ -643,7 +609,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// seçilen yerdeki piyonu deðiþtirir
     /// </summary>
-    /// <param name="selected"></param>
     public void MovePawn(int selected)
     {
         int x = selectedSquare / 8;
@@ -668,8 +633,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// yeme iþlemi yapýldýktan sonra hareket edilecek yerin seçilme ile olur
     /// </summary>
-    /// <param name="selected"></param>
-    /// <param name="eat"></param>
     public void JumpPawn(int selected, int eat)
     {
         if(tour) UIC.SetButton();
@@ -706,7 +669,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// seçtiðimiz karoyu deðiþtirip deðiþtirmediðimize bakar
     /// </summary>
-    /// <param name="num"></param>
     public void setSelectedSquare(int num)
     {
         if (num != selectedSquare && !again)
@@ -753,7 +715,7 @@ public class DamaController : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {
-                board[i][j] = 1;
+                board[i][j] = 3;
             }
         }
 
@@ -793,8 +755,6 @@ public class DamaController : MonoBehaviour
     /// <summary>
     /// verilen deðere göre rengini döndürür
     /// </summary>
-    /// <param name="x"></param>
-    /// <returns></returns>
     private Color FindStartColor(int x)
     {
         if (x % 2 == 1) return Color.black;
