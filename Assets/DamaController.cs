@@ -19,7 +19,6 @@ public class DamaController : MonoBehaviour
 
     // yeme sonrasý yapýlacak iþlemler
     private bool again = false;
-    private int jumper = -1;
 
     void Start()
     {
@@ -71,10 +70,12 @@ public class DamaController : MonoBehaviour
     private void CompulsiveEating()
     {
         Move Move = eatFinder();
-        Debug.Log("eat num : " + Move);
+
+        if (selectedSquare != -1 && Move.From != selectedSquare) Move = null;
 
         if(Move != null)
         {
+            Debug.Log("eat num : " + Move.Eat + "\nselect num : " + Move.From + "\ndirection num : " + Move.To);
             selectedSquare = Move.From;
             again = true;
             SetAfterEatBoard();
@@ -82,6 +83,9 @@ public class DamaController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// yeme durumu için tahtayý hazýrlar
+    /// </summary>
     private void SetForEat(Move move)
     {
         int direction =  move.To - move.From;
@@ -95,6 +99,9 @@ public class DamaController : MonoBehaviour
         else SetAfterEat(move.Eat, 0, direction, false);
     }
 
+    /// <summary>
+    /// yeme hamlesini bulur
+    /// </summary>
     private Move eatFinder()
     {
         Move move;
@@ -116,6 +123,9 @@ public class DamaController : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// olasý hamleleri bulur
+    /// </summary>
     private Move AddPossibleMoves(int row, int col)
     {
         int pawn = board[row][col];
@@ -146,9 +156,9 @@ public class DamaController : MonoBehaviour
         {
             if (IsValidMoveCol(row, i, type)) break;
 
-            if (IsValidMoveCol(row, i, reverseType))
+            if (IsValidMoveCol(row, i, reverseType) && !IsValidMoveCol(row, i))
             {
-                if(IsValidMoveCol(row, i - 1) && !IsValidMoveCol(row, i))  return new Move(row * 8 + col, row * 8 + col - 1, row * 8 + i);
+                if(IsValidMoveCol(row, i - 1))  return new Move(row * 8 + col, row * 8 + col - 1, row * 8 + i);
                 else break;
             }
         }
@@ -156,9 +166,9 @@ public class DamaController : MonoBehaviour
         {
             if (IsValidMoveCol(row, i, type)) break;
 
-            if (IsValidMoveCol(row, i, reverseType))
+            if (IsValidMoveCol(row, i, reverseType) && !IsValidMoveCol(row, i))
             {
-                if(IsValidMoveCol(row, i + 1) && !IsValidMoveCol(row, i)) return new Move(row * 8 + col, row * 8 + col + 1, row * 8 + i);
+                if(IsValidMoveCol(row, i + 1)) return new Move(row * 8 + col, row * 8 + col + 1, row * 8 + i);
                 else break;
             }
         }
@@ -166,9 +176,9 @@ public class DamaController : MonoBehaviour
         {
             if (IsValidMoveRow(col, i, type)) break;
 
-            if (IsValidMoveRow(col, i, reverseType))
+            if (IsValidMoveRow(col, i, reverseType) && !IsValidMoveRow(col, i))
             {
-                if (IsValidMoveRow(col, i + 1) && !IsValidMoveRow(col, i)) return new Move(row * 8 + col, (row + 1) * 8 + col, i * 8 + col);
+                if (IsValidMoveRow(col, i + 1)) return new Move(row * 8 + col, (row + 1) * 8 + col, i * 8 + col);
                 else break;
             }
         }
@@ -176,9 +186,9 @@ public class DamaController : MonoBehaviour
         {
             if (IsValidMoveRow(col, i, type)) break;
 
-            if (IsValidMoveRow(col, i, reverseType))
+            if (IsValidMoveRow(col, i, reverseType) && !IsValidMoveRow(col, i))
             {
-                if (IsValidMoveRow(col, i - 1) && !IsValidMoveRow(col, i)) return new Move(row * 8 + col, (row - 1) * 8 + col, i * 8 + col);
+                if (IsValidMoveRow(col, i - 1)) return new Move(row * 8 + col, (row - 1) * 8 + col, i * 8 + col);
                 else break;
             }
         }
@@ -214,11 +224,7 @@ public class DamaController : MonoBehaviour
     /// </summary>
     private bool IsValidMoveCol(int startRow, int col)
     {
-        if (col < 0 || col > 7)
-            return false;
-        if (board[startRow][col] != 0) // Hedef konum boþ olmalý
-            return false;
-        return true;
+        return (col < 0 || col > 7 || board[startRow][col] != 0) ? false : true;
     }
 
     /// <summary>
@@ -226,43 +232,23 @@ public class DamaController : MonoBehaviour
     /// </summary>
     private bool IsValidMoveRow(int startCol, int raw)
     {
-        if (raw < 0 || raw > 7)
-            return false;
-        if (board[raw][startCol] != 0) // Hedef konum boþ olmalý
-            return false;
-        return true;
+        return (raw < 0 || raw > 7 || board[raw][startCol] != 0) ? false : true;
     }
 
     /// <summary>
-    /// tipine uygun ise hareket ettirir
+    /// tipine uygun mu diye stunu arar
     /// </summary>
     private bool IsValidMoveCol(int startRow, int col, int type)
     {
-        if (col < 0 || col > 7)
-            return false;
-        if (board[startRow][col] % 2 != type) // Hedef konum boþ olmalý
-            return false;
-        return true;
+        return (col < 0 || col > 7 || board[startRow][col] % 2 != type) ? false : true;
     }
 
     /// <summary>
-    /// tipine uygun ise hareket ettirir
+    /// tipine uygun mu diye satýrý arar
     /// </summary>
     private bool IsValidMoveRow(int startCol, int raw, int type)
     {
-        if (raw < 0 || raw > 7)
-            return false;
-        if (board[raw][startCol] % 2 != type)
-            return false;
-        return true;
-    }
-
-    /// <summary>
-    /// rakibin numarasýný bulur
-    /// </summary>
-    private int findOrherType(int type)
-    {
-        return (type > 0) ? 0 : 1;
+        return (raw < 0 || raw > 7 || board[raw][startCol] % 2 != type) ? false : true;
     }
 
     /// <summary>
@@ -271,28 +257,6 @@ public class DamaController : MonoBehaviour
     private int CheckTourPawnType()
     {
         return tour ? 1 : 0;
-    }
-
-    /// <summary>
-    /// yeme hareketini zoraki oynatýr
-    /// </summary>
-    private IEnumerator PlayTheMove(Move move)
-    {
-        yield return new WaitForSeconds(.5f);
-
-        setSelectedSquare(move.From);
-
-        yield return new WaitForSeconds(.5f);
-
-        if (move.State == state.move) MovePawn(move.To);
-        else if (move.State == state.eat) EatPawn(move.Eat);
-
-        if (tour)
-        {
-            UIC.SetButton();
-            setSelectedSquare(move.To);
-            again = true;
-        }      
     }
 
     // tur sistemleri
@@ -337,41 +301,19 @@ public class DamaController : MonoBehaviour
     }
 
     /// <summary>
-    /// pawný dama yapar
-    /// </summary>
-    private void PawntoDama(int square)
-    {
-        int x = square / 8;
-        int z = square % 8;
-
-        board[x][z] += 2;
-    }
-
-    /// <summary>
     /// yeme iþlemi gerçekleþtikten sonra düþebileceði noktalarý ayarlar
     /// </summary>
-    private void SetAfterEat(int eat, int x, int z, bool isPawn)
+    private void SetAfterEat(int eat, int x, int z, bool isPawn = true)
     {
         int jumppoint = eat + ((8 * x) + z);
 
         if (isPawn) boardSCList[jumppoint].Jumpable(eat);
         else
         {
-            if (x == 0)
+            for (; jumppoint > -1 && jumppoint < boardSCList.Count; jumppoint += (8 * x) + z)
             {
-                for (int i = eat + z; i > -1 && i < boardSCList.Count; i += z)
-                {
-                    if (CalculatePawnType(i)  == 0) boardSCList[i].Jumpable(eat);
-                    else break; //þimdilik bir engel gelince duruyor
-                }
-            }
-            else
-            {
-                for (int i = eat + (8 * x); i > -1 && i < boardSCList.Count; i += 8 * x) 
-                {
-                    if (CalculatePawnType(i) == 0) boardSCList[i].Jumpable(eat);
-                    else break; //þimdilik bir engel gelince duruyor
-                }
+                if (CalculatePawnType(jumppoint) == 0) boardSCList[jumppoint].Jumpable(eat);
+                else break; //þimdilik bir engel gelince duruyor
             }
         } 
     }
@@ -557,8 +499,8 @@ public class DamaController : MonoBehaviour
 
         ResetBoard();
 
-        if(again) SetAfterEatBoard();
-        else if (tour) CompulsiveEating();
+        if (again) SetAfterEatBoard();
+        if (tour) CompulsiveEating();
     }
 
     /// <summary>
