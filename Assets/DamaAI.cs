@@ -149,7 +149,7 @@ public class DamaAI : MonoBehaviour
             }
         }
 
-        bestMove = FindBestMove(BestMoves, 5, 1);// sonraki 6 adýma bakarak en iyi hamleyi bulur. Not: çift olmasý lazým çünkü bizim yapacaðýmýz hamleyide tahmin edecek
+        bestMove = FindBestMove(BestMoves, 11, 1);// sonraki 11 adýma bakarak en iyi hamleyi bulur. Not: tek olmasý lazým çünkü bizim yapacaðýmýz hamleyide tahmin edecek
 
         Debug.Log("eat num : " + bestMove.Eat + "\nselect num : " + bestMove.From + "\ndirection num : " + bestMove.To);
 
@@ -161,12 +161,18 @@ public class DamaAI : MonoBehaviour
     /// </summary>
     private Move FindBestMove(List<Move> moves, int step, int type)
     {
-        List<Move> possibleMoves;
-        moves = findBests(moves);
+        Debug.Log(moves.Count);
+
+        List <Move> possibleMoves;
+        findBests(moves);
+
+        Debug.Log(moves.Count);
 
         possibleMoves = GetPossibleMoves(type, moves);// çiftleri ai kontrole diyor
 
         int bestScore = int.MinValue;
+
+        Debug.Log(moves.Count);
 
         foreach (Move move in possibleMoves)
         {
@@ -179,20 +185,25 @@ public class DamaAI : MonoBehaviour
             }
         }
 
+        Debug.Log(moves.Count + "\n" + step + "\n" + type);
+
         if (step > 0) return FindBestMove(moves, step - 1, findOrherType(type));
 
-        Debug.Log(moves[moves.Count - 1].RootMove + "\nfrom: " + moves[moves.Count - 1].RootMove.From + "\njump: " + moves[moves.Count - 1].RootMove.To + "\nEat: " + moves[moves.Count - 1].RootMove.Eat); // null döndürmesi lazým
 
-        return moves[moves.Count - 1].RootMove;
+        //Debug.Log(moves[moves.Count - 1].RootMove + "\nfrom: " + moves[moves.Count - 1].RootMove.From + "\njump: " + moves[moves.Count - 1].RootMove.To + "\nEat: " + moves[moves.Count - 1].RootMove.Eat); // null döndürmesi lazým
+
+        return moves[0].RootMove;
     }
 
     private List<Move> GetPossibleMoves(int type, List<Move> moves)
     {
         List<Move> posibleMove = new List<Move>();
 
-        while (moves.Count > 0)
+        int count = moves.Count - 1;
+
+        while (count > -1)
         {
-            int[][] board = SimulateBoard(moves[0]);
+            int[][] board = MakeMove(moves[count]);
 
             for (int i = 0; i < 8; i++)
             {
@@ -200,12 +211,12 @@ public class DamaAI : MonoBehaviour
                 {
                     if (board[i][j] > 0 && board[i][j] % 2 == type)
                     {
-                        AddPossibleMoves(i, j, posibleMove, findRoot(moves[0]));
+                        AddPossibleMoves(i, j, posibleMove, findRoot(moves[count]));
                     }
                 }
             }
 
-            moves.RemoveAt(0);
+            count--;
         }
 
         return posibleMove;
@@ -238,78 +249,17 @@ public class DamaAI : MonoBehaviour
         }
     }
 
-    private int[][] SimulateBoard(Move move)
-    {
-        int[][] board = this.board;
-
-        if (move.State == state.move) board = MovePawn(move, board);
-        else board = EatPawn(move, board);
-
-        return board;
-    }
-
-    public int[][] EatPawn(Move move, int [][] board)
-    {
-        int x = move.From / 8;
-        int z = move.From % 8;
-        int i = board[x][z];
-
-        board[x][z] = 0;
-
-        x = move.Eat / 8;
-        z = move.Eat % 8;
-
-        board[x][z] = 0;
-
-        int jump = move.To;
-
-        x = jump / 8;
-        z = jump % 8;
-
-        if (x == 0 || x == 7) i += 2;//pawný dama yapar
-
-        board[x][z] = i;
-
-        return board;
-    }
-
-    /// <summary>
-    /// seçilen yerdeki piyonu deðiþtirir
-    /// </summary>
-    public int[][] MovePawn(Move move, int[][] board)
-    {
-        int x = move.From / 8;
-        int z = move.From % 8;
-        int i = board[x][z];
-
-        board[x][z] = 0;
-
-        x = move.To / 8;
-        z = move.To % 8;
-
-        if (x == 0 || x == 7) i += 2;//pawný dama yapar
-
-        board[x][z] = i;
-
-        return board;
-    }
-
     /// <summary>
     /// verilen listedeki en sonda bulunan en iyi hamlelerden belirlenen miktarýný ayýrýr
     /// </summary>
-    private List<Move> findBests(List<Move> moves, int count = 3)
+    private void findBests(List<Move> moves, int count = 3)
     {
-        if (moves.Count <= count) return moves;
+        if (moves.Count <= count) return;
 
-        count = moves.Count - 1 - count;
-        List<Move> bests = new List<Move>();
-
-        for (int i = moves.Count - 1; i > count; i--)
+        while (moves.Count > count)
         {
-            bests.Add(moves[i]);
+            moves.RemoveAt(0);
         }
-
-        return bests;
     }
 
     // step 1 // ******************************************************************
