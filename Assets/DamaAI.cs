@@ -41,6 +41,7 @@ public class DamaAI : MonoBehaviour
         }
 
         Move bestMove = FindBestMove();
+
         if (bestMove != null)
         {
             StartCoroutine(PlayTheMove(bestMove));
@@ -58,7 +59,7 @@ public class DamaAI : MonoBehaviour
         yield return new WaitForSeconds(.5f);
 
         if (move.State == state.move) DC.MovePawn(move.To);
-        else if (move.State == state.eat) DC.EatPawn(move.Eat);
+        else if (move.State == state.eat) DC.JumpPawn(move.To,move.Eat);
 
         if (move.State == state.move || !again) DC.tour = true;
 
@@ -82,6 +83,7 @@ public class DamaAI : MonoBehaviour
             }
         }
 
+        Debug.Log("eat num : " + bestMove.Eat + "\nselect num : " + bestMove.From + "\ndirection num : " + bestMove.To);
         return bestMove;
     }
 
@@ -144,6 +146,8 @@ public class DamaAI : MonoBehaviour
             }
         }
 
+        Debug.Log("eat num : " + bestMove.Eat + "\nselect num : " + bestMove.From + "\ndirection num : " + bestMove.To);
+
         return bestMove;
     }
 
@@ -188,9 +192,6 @@ public class DamaAI : MonoBehaviour
     /// <summary>
     /// verilen taþýn muhtemel hamlelerinin hepsini hesaplar
     /// </summary>
-    /// <param name="row"></param>
-    /// <param name="col"></param>
-    /// <param name="moves"></param>
     private void AddPossibleMoves(int row, int col, List<Move> moves)
     {
         int pawn = board[row][col];
@@ -210,9 +211,6 @@ public class DamaAI : MonoBehaviour
     /// <summary>
     /// dama pawnlarýnýn hareket edebileceði yerleri hesaplar
     /// </summary>
-    /// <param name="row"></param>
-    /// <param name="col"></param>
-    /// <param name="moves"></param>
     private void AddDamaMoves(int row, int col, List<Move> moves)
     {
         // yeme
@@ -222,48 +220,48 @@ public class DamaAI : MonoBehaviour
 
         for (int i = col - 1; i > -1; i--)
         {
-            if (IsValidMoveCol(row, i, reverseType) && IsValidMoveCol(row, i - 1)) 
+            if (IsValidMoveCol(row, i, reverseType) && !IsValidMoveCol(row, i)) 
             {
                 for(int j = i - 1; j > -1; j--)
                 {
-                    if (!IsValidMoveCol(row, j)) break;
-                    moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    else break;
                 }
                 break;
             }
         }
         for (int i = col + 1; i < 8; i++)
         {
-            if (IsValidMoveCol(row, i, reverseType) && IsValidMoveCol(row, i + 1))
+            if (IsValidMoveCol(row, i, reverseType) && !IsValidMoveCol(row, i))
             {
                 for (int j = i + 1; j < 8; j++)
                 {
-                    if (!IsValidMoveCol(row, j)) break;
-                    moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    else break;
                 }
                 break;
             }
         }
         for (int i = row + 1; i < 8; i++)
         {
-            if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i + 1))
+            if (IsValidMoveRow(col, i, reverseType)&& !IsValidMoveRow(col, i))
             {
                 for (int j = i + 1; j < 8; j++)
                 {
-                    if (!IsValidMoveRow(col, j)) break;
-                    moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    else break;
                 }
                 break;
             }
         }
         for (int i = row - 1; i > -1; i--)
         {
-            if (IsValidMoveRow(col, i, reverseType) && IsValidMoveRow(col, i - 1))
+            if (IsValidMoveRow(col, i, reverseType) && !IsValidMoveRow(col, i))
             {
                 for (int j = i - 1; j > -1; j--)
                 {
-                    if (!IsValidMoveRow(col, j)) break;
-                    moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    else break;
                 }
                 break;
             }
@@ -343,63 +341,33 @@ public class DamaAI : MonoBehaviour
     /// <summary>
     /// boþ nokta bulmak için stunu arar
     /// </summary>
-    /// <param name="startRow"></param>
-    /// <param name="cal"></param>
-    /// <returns></returns>
     private bool IsValidMoveCol(int startRow, int col)
     {
-        if ( col < 0 || col > 7)
-            return false;
-        if (board[startRow][col] != 0) // Hedef konum boþ olmalý
-            return false;
-        return true;
+        return (col < 0 || col > 7 || board[startRow][col] != 0) ? false : true;
     }
 
     /// <summary>
     /// boþ nokta aramak için satýrý tarar
     /// </summary>
-    /// <param name="startCol"></param>
-    /// <param name="raw"></param>
-    /// <returns></returns>
-    private bool IsValidMoveRow(int startCol, int raw)
+    private bool IsValidMoveRow(int startCol, int row)
     {
-        if ( raw < 0 || raw > 7)
-            return false;
-        if (board[raw][startCol] != 0) // Hedef konum boþ olmalý
-            return false;
-        return true;
+        return (row < 0 || row > 7 || board[row][startCol] != 0) ? false : true;
     }
 
     /// <summary>
-    /// tipine uygun ise hareket ettirir
+    /// tipine uygun mu diye stunu arar
     /// </summary>
-    /// <param name="startRow"></param>
-    /// <param name="cal"></param>
-    /// <param name="type"></param>
-    /// <returns></returns>
     private bool IsValidMoveCol(int startRow, int col, int type)
     {
-        if (col < 0 || col > 7)
-            return false;
-        if (board[startRow][col] % 2 != type) // Hedef konum boþ olmalý
-            return false;
-        return true;
+        return (col < 0 || col > 7 || board[startRow][col] % 2 != type) ? false : true;
     }
 
     /// <summary>
-    /// tipine uygun ise hareket ettirir
+    /// tipine uygun mu diye satýrý arar
     /// </summary>
-    /// <param name="startCol"></param>
-    /// <param name="raw"></param>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    private bool IsValidMoveRow(int startCol, int raw, int type)
+    private bool IsValidMoveRow(int startCol, int row, int type)
     {
-        if (raw < 0 || raw > 7)
-            return false;
-        if (board[raw][startCol] % 2 != type) // Hedef konum boþ olmalý
-            return false;
-        return true;
+        return (row < 0 || row > 7 || board[row][startCol] % 2 != type) ? false : true;
     }
 
     /// <summary>
@@ -453,6 +421,7 @@ public class DamaAI : MonoBehaviour
         return newBoard;
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // AI ýn deðerlendirmesi için tahtanýn puanlandýðý kýsým
 
     /// <summary>

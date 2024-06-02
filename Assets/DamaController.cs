@@ -89,14 +89,15 @@ public class DamaController : MonoBehaviour
     private void SetForEat(Move move)
     {
         int direction =  move.To - move.From;
+        int num = board[move.From / 8][move.From % 8];
 
-        if(Mathf.Abs(direction) > 7)
+        if (Mathf.Abs(direction) > 7)
         {
             direction /= 8;
 
-            SetAfterEat(move.Eat, direction, 0, false);
+            SetAfterEat(move.Eat, direction, 0, num < 3);
         }
-        else SetAfterEat(move.Eat, 0, direction, false);
+        else SetAfterEat(move.Eat, 0, direction, num < 3);
     }
 
     /// <summary>
@@ -205,15 +206,15 @@ public class DamaController : MonoBehaviour
 
         if (IsValidMoveCol(row, col - 1, reverseType) && IsValidMoveCol(row, col - 2) && !IsValidMoveCol(row, col - 1))
         {
-            return new Move(row * 8 + col, row * 8 + col - 2, row * 8 + col -1);
+            return new Move(row * 8 + col, row * 8 + col - 1, row * 8 + col -1);
         }
         else if (IsValidMoveCol(row, col + 1, reverseType) && IsValidMoveCol(row, col + 2) && !IsValidMoveCol(row, col + 1))
         {
-            return new Move(row * 8 + col, row * 8 + col + 2, row * 8 + col + 1);
+            return new Move(row * 8 + col, row * 8 + col + 1, row * 8 + col + 1);
         }
         else if (IsValidMoveRow(col, row + 1, reverseType) && IsValidMoveRow(col, row + 2) && !IsValidMoveRow(col, row + 1))
         {
-            return new Move(row * 8 + col, (row + 2) * 8 + col, (row + 1) * 8 + col);
+            return new Move(row * 8 + col, (row + 1) * 8 + col, (row + 1) * 8 + col);
         }
 
         return null;
