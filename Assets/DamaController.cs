@@ -67,6 +67,9 @@ public class DamaController : MonoBehaviour
 
     // zorunlu yeme kuralý 
 
+    /// <summary>
+    /// zorunlu yeme durumu varmý kontrol eder ve o durumu oynatýr
+    /// </summary>
     private void CompulsiveEating()
     {
         Move Move = eatFinder();
@@ -377,6 +380,9 @@ public class DamaController : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// sahnede damanýn hareket edeceði yerleri bulur
+    /// </summary>
     private void checkDamaPawn(int x, int z)
     {
         int pawnType = board[x][z];

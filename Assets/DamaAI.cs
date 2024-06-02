@@ -121,6 +121,8 @@ public class DamaAI : MonoBehaviour
         board = DC.board;
     }
 
+    // tahtadaki olasý hamleleri bulma aþamasý ///////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// bütün hamleleri hesapladýktan sorna en iyi 11 hamleyi alýr ve onalarýda tekrar hesaplar tekrarlar ve 15. defanýn ardýndan en iyi sonucu döndürür  
     /// </summary>
@@ -128,6 +130,7 @@ public class DamaAI : MonoBehaviour
     private Move FindBestMove()
     {
         List<Move> possibleMoves;
+        List<Move> BestMoves = new List<Move>();
 
         if (again) possibleMoves = GetPossibleMoves(0, jumper);
         else possibleMoves = GetPossibleMoves(0);// çiftleri ai kontrole diyor
@@ -142,14 +145,174 @@ public class DamaAI : MonoBehaviour
             if (score > bestScore)
             {
                 bestScore = score;
-                bestMove = move;
+                BestMoves.Add(move);
             }
         }
 
+        bestMove = FindBestMove(BestMoves, 5, 1);// sonraki 6 adýma bakarak en iyi hamleyi bulur. Not: çift olmasý lazým çünkü bizim yapacaðýmýz hamleyide tahmin edecek
+
         Debug.Log("eat num : " + bestMove.Eat + "\nselect num : " + bestMove.From + "\ndirection num : " + bestMove.To);
 
-        return bestMove;
+        return bestMove.RootMove == null ? bestMove : bestMove.RootMove;
+    } 
+    
+    /// <summary>
+    /// rekrsif olarak daha iyi hamle bulmaya uðraþýr
+    /// </summary>
+    private Move FindBestMove(List<Move> moves, int step, int type)
+    {
+        List<Move> possibleMoves;
+        moves = findBests(moves);
+
+        possibleMoves = GetPossibleMoves(type, moves);// çiftleri ai kontrole diyor
+
+        int bestScore = int.MinValue;
+
+        foreach (Move move in possibleMoves)
+        {
+            int[][] newBoard = MakeMove(move);
+            int score = EvaluateBoard(newBoard, 0);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                moves.Add(move);
+            }
+        }
+
+        if (step > 0) return FindBestMove(moves, step - 1, findOrherType(type));
+
+        Debug.Log(moves[moves.Count - 1].RootMove + "\nfrom: " + moves[moves.Count - 1].RootMove.From + "\njump: " + moves[moves.Count - 1].RootMove.To + "\nEat: " + moves[moves.Count - 1].RootMove.Eat); // null döndürmesi lazým
+
+        return moves[moves.Count - 1].RootMove;
     }
+
+    private List<Move> GetPossibleMoves(int type, List<Move> moves)
+    {
+        List<Move> posibleMove = new List<Move>();
+
+        while (moves.Count > 0)
+        {
+            int[][] board = SimulateBoard(moves[0]);
+
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (board[i][j] > 0 && board[i][j] % 2 == type)
+                    {
+                        AddPossibleMoves(i, j, posibleMove, findRoot(moves[0]));
+                    }
+                }
+            }
+
+            moves.RemoveAt(0);
+        }
+
+        return posibleMove;
+    }
+
+    /// <summary>
+    /// ana kökü bulur ve o kökü döndürür
+    /// </summary>
+    private Move findRoot(Move move)
+    {
+        return move.RootMove == null ? move : move.RootMove;
+    }
+
+    /// <summary>
+    /// verilen taþýn muhtemel hamlelerinin hepsini hesaplar
+    /// </summary>
+    private void AddPossibleMoves(int row, int col, List<Move> moves, Move root)
+    {
+        int pawn = board[row][col];
+
+        if (pawn > 2)
+        {
+            // Dama taþýnýn hareketleri
+            AddDamaMoves(row, col, moves, root);
+        }
+        else if (pawn > 0)
+        {
+            // Normal taþýn hareketleri
+            AddNormalMoves(row, col, moves, root);
+        }
+    }
+
+    private int[][] SimulateBoard(Move move)
+    {
+        int[][] board = this.board;
+
+        if (move.State == state.move) board = MovePawn(move, board);
+        else board = EatPawn(move, board);
+
+        return board;
+    }
+
+    public int[][] EatPawn(Move move, int [][] board)
+    {
+        int x = move.From / 8;
+        int z = move.From % 8;
+        int i = board[x][z];
+
+        board[x][z] = 0;
+
+        x = move.Eat / 8;
+        z = move.Eat % 8;
+
+        board[x][z] = 0;
+
+        int jump = move.To;
+
+        x = jump / 8;
+        z = jump % 8;
+
+        if (x == 0 || x == 7) i += 2;//pawný dama yapar
+
+        board[x][z] = i;
+
+        return board;
+    }
+
+    /// <summary>
+    /// seçilen yerdeki piyonu deðiþtirir
+    /// </summary>
+    public int[][] MovePawn(Move move, int[][] board)
+    {
+        int x = move.From / 8;
+        int z = move.From % 8;
+        int i = board[x][z];
+
+        board[x][z] = 0;
+
+        x = move.To / 8;
+        z = move.To % 8;
+
+        if (x == 0 || x == 7) i += 2;//pawný dama yapar
+
+        board[x][z] = i;
+
+        return board;
+    }
+
+    /// <summary>
+    /// verilen listedeki en sonda bulunan en iyi hamlelerden belirlenen miktarýný ayýrýr
+    /// </summary>
+    private List<Move> findBests(List<Move> moves, int count = 3)
+    {
+        if (moves.Count <= count) return moves;
+
+        count = moves.Count - 1 - count;
+        List<Move> bests = new List<Move>();
+
+        for (int i = moves.Count - 1; i > count; i--)
+        {
+            bests.Add(moves[i]);
+        }
+
+        return bests;
+    }
+
+    // step 1 // ******************************************************************
 
     /// <summary>
     /// verilen tipteki taþlarýn bütün hareketlerini bulur
@@ -211,7 +374,7 @@ public class DamaAI : MonoBehaviour
     /// <summary>
     /// dama pawnlarýnýn hareket edebileceði yerleri hesaplar
     /// </summary>
-    private void AddDamaMoves(int row, int col, List<Move> moves)
+    private void AddDamaMoves(int row, int col, List<Move> moves, Move root = null)
     {
         // yeme
 
@@ -224,7 +387,7 @@ public class DamaAI : MonoBehaviour
             {
                 for(int j = i - 1; j > -1; j--)
                 {
-                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i, root));
                     else break;
                 }
                 break;
@@ -236,7 +399,7 @@ public class DamaAI : MonoBehaviour
             {
                 for (int j = i + 1; j < 8; j++)
                 {
-                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i));
+                    if (IsValidMoveCol(row, j)) moves.Add(new Move(row * 8 + col, row * 8 + j, row * 8 + i, root));
                     else break;
                 }
                 break;
@@ -248,7 +411,7 @@ public class DamaAI : MonoBehaviour
             {
                 for (int j = i + 1; j < 8; j++)
                 {
-                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col, root));
                     else break;
                 }
                 break;
@@ -260,7 +423,7 @@ public class DamaAI : MonoBehaviour
             {
                 for (int j = i - 1; j > -1; j--)
                 {
-                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col));
+                    if (IsValidMoveRow(col, j)) moves.Add(new Move(row * 8 + col, j * 8 + col, i * 8 + col, root));
                     else break;
                 }
                 break;
@@ -273,19 +436,19 @@ public class DamaAI : MonoBehaviour
         {
             for (int i = col - 1; IsValidMoveCol(row, i); i--)
             {
-                moves.Add(new Move(row * 8 + col, row * 8 + i));
+                moves.Add(new Move(row * 8 + col, row * 8 + i, root));
             }
             for (int i = col + 1; IsValidMoveCol(row, i); i++)
             {
-                moves.Add(new Move(row * 8 + col, row * 8 + i));
+                moves.Add(new Move(row * 8 + col, row * 8 + i, root));
             }
             for (int i = row + 1; IsValidMoveRow(col, i); i++)
             {
-                moves.Add(new Move(row * 8 + col, i * 8 + col));
+                moves.Add(new Move(row * 8 + col, i * 8 + col, root));
             }
             for (int i = row - 1; IsValidMoveRow(col, i); i--)
             {
-                moves.Add(new Move(row * 8 + col, i * 8 + col));
+                moves.Add(new Move(row * 8 + col, i * 8 + col, root));
             }
         }
     }
@@ -296,7 +459,7 @@ public class DamaAI : MonoBehaviour
     /// <param name="row"></param>
     /// <param name="col"></param>
     /// <param name="moves"></param>
-    private void AddNormalMoves(int row, int col, List<Move> moves)
+    private void AddNormalMoves(int row, int col, List<Move> moves, Move root = null)
     {
         // yeme için
 
@@ -305,17 +468,17 @@ public class DamaAI : MonoBehaviour
 
         if (IsValidMoveCol(row, col - 1, reverseType) && IsValidMoveCol(row, col - 2))
         {
-            moves.Add(new Move(row * 8 + col, row * 8 + col - 2, row * 8 + col - 1));
+            moves.Add(new Move(row * 8 + col, row * 8 + col - 2, row * 8 + col - 1, root));
             again = true;
         }
         else if (IsValidMoveCol(row, col + 1, reverseType) && IsValidMoveCol(row, col + 2))
         {
-            moves.Add(new Move(row * 8 + col, row * 8 + col + 2, row * 8 + col + 1));
+            moves.Add(new Move(row * 8 + col, row * 8 + col + 2, row * 8 + col + 1, root));
             again = true;
         }
         else if (IsValidMoveRow(col, row - 1, reverseType) && IsValidMoveRow(col, row - 2))
         {
-            moves.Add(new Move(row * 8 + col, (row - 2) * 8 + col, (row - 1) * 8 + col));
+            moves.Add(new Move(row * 8 + col, (row - 2) * 8 + col, (row - 1) * 8 + col, root));
             again = true;
         }
 
@@ -325,15 +488,15 @@ public class DamaAI : MonoBehaviour
         {
             if (IsValidMoveRow(col, row - 1))// önceliðimiz ileri gitmek olduðu için önce ileri gitme þanslarýmýza bakýyoruz
             {
-                moves.Add(new Move(row * 8 + col, (row - 1) * 8 + col));
+                moves.Add(new Move(row * 8 + col, (row - 1) * 8 + col, root));
             }
             if (IsValidMoveCol(row, col - 1))
             {
-                moves.Add(new Move(row * 8 + col, row * 8 + col - 1));
+                moves.Add(new Move(row * 8 + col, row * 8 + col - 1, root));
             }
             if (IsValidMoveCol(row, col + 1))
             {
-                moves.Add(new Move(row * 8 + col, row * 8 + col + 1));
+                moves.Add(new Move(row * 8 + col, row * 8 + col + 1, root));
             }
         }
     }
@@ -507,20 +670,23 @@ public class Move
     public int To { get; set; }   // Nereye oynatacaðýmýzý belirten deðiþken
     public int Eat { get; set; } // yemesi gereken taþýn deðerini tutar
     public state State { get; set; } //hangi iþlemi gerçekleþtireceðini gösterir
+    public Move RootMove { get; set; } // birkaç hamle sonrasýný görürken hangi hamleden türediðini görmek için
 
-    public Move(int from, int to)
+    public Move(int from, int to, Move rootMove = null)
     {
         From = from;
         To = to;
         State = state.move;
+        RootMove = rootMove;
     }
 
-    public Move(int from, int to, int eat)
+    public Move(int from, int to, int eat, Move rootMove = null)
     {
         From = from;
         To = to;
         Eat = eat;
         State = state.eat;
+        RootMove = rootMove;
     }
 }
 
