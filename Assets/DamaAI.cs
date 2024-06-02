@@ -161,18 +161,12 @@ public class DamaAI : MonoBehaviour
     /// </summary>
     private Move FindBestMove(List<Move> moves, int step, int type)
     {
-        Debug.Log(moves.Count);
-
         List <Move> possibleMoves;
         findBests(moves);
-
-        Debug.Log(moves.Count);
 
         possibleMoves = GetPossibleMoves(type, moves);// çiftleri ai kontrole diyor
 
         int bestScore = int.MinValue;
-
-        Debug.Log(moves.Count);
 
         foreach (Move move in possibleMoves)
         {
@@ -185,12 +179,7 @@ public class DamaAI : MonoBehaviour
             }
         }
 
-        Debug.Log(moves.Count + "\n" + step + "\n" + type);
-
         if (step > 0) return FindBestMove(moves, step - 1, findOrherType(type));
-
-
-        //Debug.Log(moves[moves.Count - 1].RootMove + "\nfrom: " + moves[moves.Count - 1].RootMove.From + "\njump: " + moves[moves.Count - 1].RootMove.To + "\nEat: " + moves[moves.Count - 1].RootMove.Eat); // null döndürmesi lazým
 
         return moves[0].RootMove;
     }

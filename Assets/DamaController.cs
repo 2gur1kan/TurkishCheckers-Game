@@ -17,6 +17,9 @@ public class DamaController : MonoBehaviour
     public bool tour = true;
     public bool startAI = false;
 
+    private int PlayerPawnCount = 16;
+    private int AIPawnCount = 16;
+
     // yeme sonrasý yapýlacak iþlemler
     private bool again = false;
 
@@ -44,6 +47,8 @@ public class DamaController : MonoBehaviour
     /// </summary>
     private void CheckBoard()
     {
+        if (CheckFinish()) CancelInvoke("CheckBoard");
+
         UIC.UpdateTourText(tour);
 
         if (tour)
@@ -63,6 +68,14 @@ public class DamaController : MonoBehaviour
             }
         }
 
+    }
+
+    private bool CheckFinish()
+    {
+        if (PlayerPawnCount < 1) return UIC.IsFinsih(false);
+        else if (AIPawnCount < 1) return UIC.IsFinsih(true);
+
+        return false;
     }
 
     // zorunlu yeme kuralý 
@@ -561,6 +574,9 @@ public class DamaController : MonoBehaviour
 
         boardSCList[jump].pawnNumber = i;
         board[x][z] = i;
+
+        EatPawnCounter(i);
+
         selectedSquare = jump;
 
         if (tour) again = true;
@@ -621,12 +637,22 @@ public class DamaController : MonoBehaviour
         boardSCList[selected].pawnNumber = i;
         board[x][z] = i;
 
+        EatPawnCounter(i);
+
         selectedSquare = selected;
 
         if (tour) again = true;
         else AI.again = true;
 
         changeBoard();
+    }
+
+    private void EatPawnCounter(int pawn)
+    {
+        int type = (pawn + 1) % 2;// find reverse pawn type
+
+        if (type > 0) PlayerPawnCount--;
+        else AIPawnCount--;
     }
 
     /// <summary>
