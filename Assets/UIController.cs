@@ -14,7 +14,7 @@ public class UIController : MonoBehaviour
     [SerializeField] private GameObject Win;
     [SerializeField] private GameObject Lose;
 
-    [SerializeField] private int GameSceneNum = 0;
+    [SerializeField] private int GameSceneNum = 1;
 
     private DamaController DC;
 
