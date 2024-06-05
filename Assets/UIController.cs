@@ -14,6 +14,8 @@ public class UIController : MonoBehaviour
     [SerializeField] private GameObject Win;
     [SerializeField] private GameObject Lose;
 
+    [SerializeField] private GameObject Panel;
+
     [SerializeField] private int GameSceneNum = 1;
 
     private DamaController DC;
@@ -21,7 +23,33 @@ public class UIController : MonoBehaviour
     private void Start()
     {
         DC = GameObject.FindGameObjectWithTag("GameController").GetComponent<DamaController>();
+        Panel.SetActive(false);
         ResetButton();
+    }
+
+    public void BackMainMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void StopGame()
+    {
+        if(!Panel.activeSelf)
+        {
+            Time.timeScale = 0;
+            Panel.SetActive(true);
+        }
+        else
+        {
+            Time.timeScale = 1f;
+            Panel.SetActive(false);
+        }
+    }
+
+    public void QuitGame()
+    {
+        CancelInvoke();
+        Application.Quit();
     }
 
     public void ResetButton()
@@ -62,6 +90,7 @@ public class UIController : MonoBehaviour
 
     public void ClickRestartButton()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene(GameSceneNum);
     }
 

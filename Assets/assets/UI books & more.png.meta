@@ -354,7 +354,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -375,7 +375,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -383,6 +383,69 @@ TextureImporter:
       bones: []
       spriteID: 065873682e05696439f499ef3ad88dd1
       internalID: -408850730
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: panel
+      rect:
+        serializedVersion: 2
+        x: 561
+        y: 401
+        width: 46
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c8b580a31f3be364ebdf45d59ac39a7b
+      internalID: 949027042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI books & more_10
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 144
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 00bfff22e45fe924096f31ef8171fe0a
+      internalID: -575312586
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI books & more_11
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 144
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c82f92c9c8e1ad445a8bb7303030e6c6
+      internalID: 751188210
       vertices: []
       indices: 
       edges: []
@@ -401,6 +464,8 @@ TextureImporter:
       Lose: 303603075
       UI books & more_0: -1919262052
       UI books & more_1: -264537176
+      UI books & more_10: -575312586
+      UI books & more_11: 751188210
       UI books & more_2: -654464088
       UI books & more_3: 509018738
       UI books & more_4: 1669484263
@@ -410,6 +475,7 @@ TextureImporter:
       UI books & more_8: -115691350
       UI books & more_9: -408850730
       Win: -1691997197
+      panel: 949027042
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
