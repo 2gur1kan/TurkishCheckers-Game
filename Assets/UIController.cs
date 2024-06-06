@@ -29,6 +29,7 @@ public class UIController : MonoBehaviour
 
     public void BackMainMenu()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene(0);
     }
 

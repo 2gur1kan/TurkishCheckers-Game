@@ -11,6 +11,7 @@ public class DamaController : MonoBehaviour
 
     private DamaAI AI;
     private UIController UIC;
+    private SoundManager SM;
 
     private int selectedSquare = -1;
     private int oldSquare = -1;
@@ -27,10 +28,11 @@ public class DamaController : MonoBehaviour
     {
         AI = GetComponent<DamaAI>();
         UIC = GameObject.FindGameObjectWithTag("UIController").GetComponent<UIController>();
+        SM = SoundManager.Instance;
 
         CreateBoard();
 
-        InvokeRepeating("CheckBoard", .1f, .1f);
+        InvokeRepeating("CheckBoard", .2f, .2f);
     }
 
     /// <summary>
@@ -582,6 +584,8 @@ public class DamaController : MonoBehaviour
         if (tour) again = true;
         else AI.again = true;
 
+        SM.PlayEatSound();
+
         changeBoard();
     }
 
@@ -604,6 +608,8 @@ public class DamaController : MonoBehaviour
 
         boardSCList[selected].pawnNumber = i;
         board[x][z] = i;
+
+        SM.PlayMoveSound();
 
         ChangeTour();// boþ hareket ettiðinde turu deðiþtirir
         changeBoard();
@@ -644,6 +650,8 @@ public class DamaController : MonoBehaviour
         if (tour) again = true;
         else AI.again = true;
 
+        SM.PlayEatSound();
+
         changeBoard();
     }
 
@@ -665,6 +673,8 @@ public class DamaController : MonoBehaviour
             ResetBoard();
             selectedSquare = num;
             boardSCList[num].Selected();
+
+            SM.PlaySelectSound();
         }
     }
 
