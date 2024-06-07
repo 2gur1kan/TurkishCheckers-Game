@@ -241,7 +241,7 @@ public class DamaAI : MonoBehaviour
     /// <summary>
     /// verilen listedeki en sonda bulunan en iyi hamlelerden belirlenen miktarýný ayýrýr
     /// </summary>
-    private void findBests(List<Move> moves, int count = 3)
+    private void findBests(List<Move> moves, int count = 6)
     {
         if (moves.Count <= count) return;
 
@@ -543,18 +543,54 @@ public class DamaAI : MonoBehaviour
                 {
                     if (board[i][j] % 2 == type)
                     {
-                        if (board[i][j] > 2) score += 20 + 2 * EdgeProximityScore(i) + 2 * EdgeProximityScore(j) - FindAlly(board, i, j, reverseType) + FindAlly(board, i, j, type);
+                        if (board[i][j] > 2) score += EvaluateDama(board, i , j, type, reverseType);
                         else score += 10 + (7 - i) + EdgeProximityScore(j) + FindAlly(board, i, j, type) - FindAlly(board, i, j, reverseType);
                     }
                     else
                     {
-                        if (board[i][j] > 2) score -= 20 + 2 * EdgeProximityScore(i) + 2 * EdgeProximityScore(j) + FindAlly(board, i, j, reverseType) - FindAlly(board, i, j, type);
-                        else score -= 10 + i + EdgeProximityScore(j) + FindAlly(board, i,j,reverseType) - FindAlly(board, i, j, type);
+                        if (board[i][j] > 2) score -= EvaluateDama(board, i, j, reverseType, type);
+                        else score -= 10 + i + EdgeProximityScore(j) + FindAlly(board, i, j, reverseType) - FindAlly(board, i, j, type);
                     }
                 }
             }
         }
         return score;
+    }
+
+    private int EvaluateDama(int[][] board, int x, int z, int type, int reverseType)
+    {
+        int score = 0;
+
+        score += 20 + 2 * EdgeProximityScore(x) + 2 * EdgeProximityScore(z) - FindAlly(board, x, z, reverseType) + FindAlly(board, x, z, type);// normal pawn etraf analizi
+
+        score += DamaCheckPos(board, x, z, type, reverseType);
+
+        return score;
+    }
+
+    /// <summary>
+    /// damanýn hareket etmesi durumunda iyi bir pozisyon yakalayabiliyor mu
+    /// </summary>
+    private int DamaCheckPos(int[][] board, int x, int z, int type, int reverseType)
+    {
+        for (int j = x + 1; IsValidMoveRow(z, j, reverseType) && !IsValidMoveRow(z, j); j++)
+        {
+            if (IsValidMoveRow(z, j + 1)) return 10;
+        }
+        for (int j = x - 1; IsValidMoveRow(z, j, reverseType) && !IsValidMoveRow(z, j); j--)
+        {
+            if (IsValidMoveRow(z, j - 1)) return 10;
+        }
+        for (int j = z - 1; IsValidMoveCol(x, j, reverseType) && !IsValidMoveCol(x, j); j--)
+        {
+            if (IsValidMoveCol(x, j - 1)) return 10;
+        }
+        for (int j = z + 1; IsValidMoveCol(x, j, reverseType) && !IsValidMoveCol(x, j); j++)
+        {
+            if (IsValidMoveCol(x, j + 1)) return 10;
+        }
+
+        return 0;
     }
 
     /// <summary>

@@ -32,7 +32,7 @@ public class DamaController : MonoBehaviour
 
         CreateBoard();
 
-        InvokeRepeating("CheckBoard", .2f, .2f);
+        InvokeRepeating("CheckBoard", .1f, .1f);
     }
 
     /// <summary>
