@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63f9e1e8d10a4ae4ba96d886246e670a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FonSound: {fileID: 8300000, guid: 4eb68733118868348ac91ecbd71fddfa, type: 3}
   EatSound: {fileID: 8300000, guid: a20ecd3151a1e7946b964ce5079f5198, type: 3}
   MoveSound: {fileID: 8300000, guid: b9eeafd5b7c5a5a4fa28e799cf6353ed, type: 3}
   SelectSound: {fileID: 8300000, guid: 172bf98d0402a2d40be2f76b7b758dda, type: 3}

@@ -417,7 +417,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -438,7 +438,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -446,6 +446,27 @@ TextureImporter:
       bones: []
       spriteID: c82f92c9c8e1ad445a8bb7303030e6c6
       internalID: 751188210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boom
+      rect:
+        serializedVersion: 2
+        x: 530
+        y: 49
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 980a67cf17ab354408f4a0ce5487cf08
+      internalID: -1942890911
       vertices: []
       indices: 
       edges: []
@@ -475,6 +496,7 @@ TextureImporter:
       UI books & more_8: -115691350
       UI books & more_9: -408850730
       Win: -1691997197
+      boom: -1942890911
       panel: 949027042
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0

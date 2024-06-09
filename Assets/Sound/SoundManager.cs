@@ -7,6 +7,11 @@ public class SoundManager : MonoBehaviour
     public static SoundManager Instance;
 
     private AudioSource AS;
+
+    [Header(" ")]
+    [SerializeField] private AudioClip FonSound;
+
+    [Header("Pawn Sound")]
     [SerializeField] private AudioClip EatSound;
     [SerializeField] private AudioClip MoveSound;
     [SerializeField] private AudioClip SelectSound;
@@ -25,9 +30,12 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    private void Start()
+    void Start()
     {
         AS = GetComponent<AudioSource>();
+        AS.clip = FonSound;
+        AS.loop = true;
+        AS.Play();
     }
 
     public void PlayEatSound()

@@ -9,7 +9,9 @@ public class UIController : MonoBehaviour
     [SerializeField] private GameObject UIPanel;
     [SerializeField] private TextMeshProUGUI TourText;
     [SerializeField] private GameObject SkipButton;
+    [SerializeField] private GameObject SoundSlider;
 
+    [Header("- Finish Panel -")]
     [SerializeField] private GameObject FinsihPanel;
     [SerializeField] private GameObject Win;
     [SerializeField] private GameObject Lose;
@@ -24,6 +26,7 @@ public class UIController : MonoBehaviour
     {
         DC = GameObject.FindGameObjectWithTag("GameController").GetComponent<DamaController>();
         Panel.SetActive(false);
+        SoundSlider.SetActive(false);
         ResetButton();
     }
 
@@ -68,6 +71,12 @@ public class UIController : MonoBehaviour
         DC.SkipTour();
 
         ResetButton();
+    }
+
+    public void ClickSoundButton()
+    {
+        if (SoundSlider.activeSelf) SoundSlider.SetActive(false);
+        else SoundSlider.SetActive(true);
     }
 
     public bool IsFinsih(bool playerWin)
