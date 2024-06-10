@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
 public class UIController : MonoBehaviour
@@ -10,11 +11,13 @@ public class UIController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI TourText;
     [SerializeField] private GameObject SkipButton;
     [SerializeField] private GameObject SoundSlider;
+    [SerializeField] private AudioSource SMAS;
 
     [Header("- Finish Panel -")]
     [SerializeField] private GameObject FinsihPanel;
     [SerializeField] private GameObject Win;
     [SerializeField] private GameObject Lose;
+    [SerializeField] private GameObject Scoreless;
 
     [SerializeField] private GameObject Panel;
 
@@ -25,9 +28,17 @@ public class UIController : MonoBehaviour
     private void Start()
     {
         DC = GameObject.FindGameObjectWithTag("GameController").GetComponent<DamaController>();
+        SMAS = SoundManager.Instance.GetComponent<AudioSource>();
+        SoundSlider.GetComponent<Slider>().value = SMAS.volume;
+
         Panel.SetActive(false);
         SoundSlider.SetActive(false);
         ResetButton();
+    }
+
+    private void SetSoundVolume()
+    {
+        SMAS.volume = SoundSlider.GetComponent<Slider>().value;
     }
 
     public void BackMainMenu()
@@ -75,25 +86,35 @@ public class UIController : MonoBehaviour
 
     public void ClickSoundButton()
     {
-        if (SoundSlider.activeSelf) SoundSlider.SetActive(false);
-        else SoundSlider.SetActive(true);
-    }
-
-    public bool IsFinsih(bool playerWin)
-    {
-        UIPanel.SetActive(false);
-        FinsihPanel.SetActive(true);
-
-        if (playerWin)
+        if (SoundSlider.activeSelf)
         {
-            Win.SetActive(true);
-            Lose.SetActive(false);
+            SoundSlider.SetActive(false);
+            CancelInvoke("SetSoundVolume");
         }
         else
         {
-            Win.SetActive(false);
-            Lose.SetActive(true);
+            SoundSlider.SetActive(true);
+            InvokeRepeating("SetSoundVolume", .1f, .1f);
         }
+    }
+
+    public bool IsFinsih(bool playerWin, bool scoreless = false)
+    {
+        Win.SetActive(false);
+        Lose.SetActive(false);
+        Scoreless.SetActive(false);
+
+        UIPanel.SetActive(false);
+        FinsihPanel.SetActive(true);
+
+        if (scoreless)
+        {
+            Scoreless.SetActive(true);
+            return true;
+        }
+
+        if (playerWin) Win.SetActive(true);
+        else Lose.SetActive(true);
 
         return true;
     }

@@ -74,6 +74,8 @@ public class DamaController : MonoBehaviour
 
     private bool CheckFinish()
     {
+        if (PlayerPawnCount == 1 && PlayerPawnCount == AIPawnCount) return UIC.IsFinsih(true, true);// berabere durumu
+
         if (PlayerPawnCount < 1) return UIC.IsFinsih(false);
         else if (AIPawnCount < 1) return UIC.IsFinsih(true);
 
@@ -98,6 +100,10 @@ public class DamaController : MonoBehaviour
             again = true;
             SetAfterEatBoard();
             SetForEat(Move);
+        }
+        else
+        {
+            UIC.ClickSkipButton();// skip tuþuna týklar :D
         }
     }
 
